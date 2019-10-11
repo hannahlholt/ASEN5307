@@ -77,4 +77,7 @@ s = spectrogram(test);
 spectrogram(test_norm, 'yaxis')
 
 
+% WE are ADDING A NEW NORMALIZATION techniqure here!!
+
+diff = 2;
 
