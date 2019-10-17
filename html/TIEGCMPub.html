@@ -1,0 +1,732 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>TIEGCM Continuity and Momentum Equation Analysis Program</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-09-04"><meta name="DC.source" content="TIEGCMPub.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>TIEGCM Continuity and Momentum Equation Analysis Program</h1><!--introduction--><p>The programs and functions used to evaluate the different terms in the momentum equation for the thermosphere. Written by Hannah Holt. Last Updated 9/4/2019</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">-------------- MAIN ----------------------</a></li><li><a href="#2">Define Program Characteristics</a></li><li><a href="#3">Loading Viki's TIEGCM Simulation</a></li><li><a href="#4">Initialize Objects</a></li><li><a href="#5">Main Function Calls</a></li><li><a href="#6">Plot Total Gas Features</a></li><li><a href="#7">Plot Specific Species Behavior</a></li><li><a href="#8">-------------- CLASSES ---------------------</a></li><li><a href="#9">A 'TIEGCMspecies' object</a></li><li><a href="#10">-------------- FUNCTIONS ------------------</a></li><li><a href="#11">-- Diffusion Coefficient Calculation</a></li><li><a href="#12">-- Horizontal Total Mass Flux Divergence Calculation</a></li><li><a href="#13">-- Vertical Advection Calculation</a></li><li><a href="#14">-- Scale Height Calculation</a></li><li><a href="#15">-- Converting from lev to ilevs</a></li></ul></div><h2 id="1">-------------- MAIN ----------------------</h2><h2 id="2">Define Program Characteristics</h2><pre class="codeinput">close <span class="string">all</span>;
+
+output = <span class="string">'~/Documents/MATLAB/TIEGCM/TIEGCM_output/'</span>;
+FigFolder = <span class="string">'./Figures/'</span>;
+addpath(output, FigFolder);
+
+<span class="comment">%----------------</span>
+ut_want = 1;        <span class="comment">% what time segment desired from simulation</span>
+feat = 1;           <span class="comment">% Select latitude and longitude desired</span>
+pdrag = 1;          <span class="comment">% 1 if pdrag file used, 0 if not</span>
+
+<span class="comment">% ----- Global Features -------</span>
+<span class="keyword">if</span> feat == 1
+lon_want = 95;          <span class="comment">% North nighttime maximum feature</span>
+lat_want = 61.25;
+savename = <span class="string">'N_He_max'</span>;
+plotname = <span class="string">'HELIUM ENHANCEMENT AT 400 KM'</span>;
+<span class="keyword">end</span>
+<span class="keyword">if</span> feat == 2
+lon_want = 85;          <span class="comment">% South nighttime maximum feature</span>
+lat_want = -58.75;
+savename = <span class="string">'S_He_max'</span>;
+plotname = <span class="string">'HELIUM ENHANCEMENT AT 400 KM'</span>;
+<span class="keyword">end</span>
+<span class="keyword">if</span> feat == 3
+lon_want = -77.5;       <span class="comment">% North Daytime minimum feature</span>
+lat_want = 18.75;
+savename = <span class="string">'N_He_min'</span>;
+plotname = <span class="string">'HELIUM DEPLETION AT 400 KM'</span>;
+<span class="keyword">end</span>
+<span class="keyword">if</span> feat == 4
+lon_want = -77.5;       <span class="comment">% South Daytime minimum feature</span>
+lat_want = -46.25;      <span class="comment">% true minimum is at -13.75 in the Southern hemi!!</span>
+savename = <span class="string">'S_He_min'</span>;
+plotname = <span class="string">'HELIUM DEPLETION AT 400 KM'</span>;
+<span class="keyword">end</span>
+</pre><h2 id="3">Loading Viki's TIEGCM Simulation</h2><pre class="codeinput"><span class="keyword">if</span> pdrag == 1
+    filename = [output, <span class="string">'HSUVW.tiegcm2.0_dres.pdrag_f107_180_001.nc'</span>];
+    id = <span class="string">'pdrag'</span>;
+<span class="keyword">end</span>
+<span class="keyword">if</span> pdrag == 0
+    filename = [output, <span class="string">'HSUVW.tiegcm2.0_dres.nodragtest_ctrSS_f107_180_001.nc'</span>];
+    id = <span class="string">'no Ion Drag'</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% Parse Data from file</span>
+den = ncread(filename,<span class="string">'DEN'</span>) / 1e3;     <span class="comment">% total density [kg/m^3] ILEV</span>
+zp = ncread(filename, <span class="string">'Z'</span>) / 100;       <span class="comment">% geopotential height [m] on ILEV</span>
+p0 = ncread(filename, <span class="string">'p0_model'</span>) / 10; <span class="comment">% p0 reference pressure used by model [Pascals]</span>
+g0 = ncread(filename, <span class="string">'grav'</span>) / 100;    <span class="comment">% const. gravitational acceleration [m/s]</span>
+z_ilev = ncread(filename, <span class="string">'ilev'</span>);      <span class="comment">% interface pressure level</span>
+Tn = ncread(filename,<span class="string">'TN'</span>);             <span class="comment">% temperature on levs [K]</span>
+lat = ncread(filename,<span class="string">'lat'</span>);           <span class="comment">% latitude points</span>
+lon = ncread(filename,<span class="string">'lon'</span>);           <span class="comment">% longitude points [-180, 180]</span>
+wn = ncread(filename,<span class="string">'WN'</span>)/100;         <span class="comment">% neutral vertical winds on ilev [m/s]</span>
+
+<span class="comment">% make a 144x57 matrix with each whole column being one of the pressure ilevs.</span>
+<span class="comment">% (i.e. rows are all the same for a given column)</span>
+Z = repmat(z_ilev', size(den,1), 1 );
+
+P = p0 .* exp(-Z);                      <span class="comment">% pressure array on ilevs [Pa]</span>
+altPts = size(z_ilev);
+lonPts = size(lon);
+
+he = ncread(filename,<span class="string">'HE'</span>);             <span class="comment">% Units of mass mixing ratio</span>
+n2 = ncread(filename,<span class="string">'N2'</span>);
+o2 = ncread(filename,<span class="string">'O2'</span>);
+o1 = ncread(filename,<span class="string">'O1'</span>);
+
+<span class="comment">% Condense to UT time and latitude</span>
+i = find(lat == lat_want);
+
+den = squeeze(den(:, i, :, ut_want+1));
+n2 = squeeze(n2(:, i , :, ut_want+1));
+o2 = squeeze(o2(:, i, :, ut_want+1));
+o1 = squeeze(o1(:, i, :, ut_want+1));
+he = squeeze(he(:, i, :, ut_want+1));
+zp = squeeze(zp(:, i, :, ut_want+1));
+Tn = squeeze(Tn(:, i, :, ut_want+1));
+wn = squeeze(wn(:, i, :, ut_want+1));
+
+<span class="comment">% put Temperature on ilevs</span>
+Tn = CONVERT2ILEV(Tn, lonPts, altPts);
+</pre><h2 id="4">Initialize Objects</h2><pre class="codeinput">N2 = TIEGCMspecies(<span class="string">'N2'</span>, 28.01, n2, den, Z);
+O2 = TIEGCMspecies(<span class="string">'O2'</span>, 32, o2, den, Z);
+O1 = TIEGCMspecies(<span class="string">'O1'</span>, 16, o1, den, Z);
+He = TIEGCMspecies(<span class="string">'He'</span>, 4, he, den, Z);
+</pre><h2 id="5">Main Function Calls</h2><p>Diffusion Coefficients for each species</p><pre class="codeinput">DiffCoeff(Tn, P, N2, O2, O1, He)
+
+<span class="comment">% Thermal diffusion coefficient</span>
+D_Ti = -0.36 * He.Di;
+
+<span class="comment">% mean molecular mass on ilevs [kg/mol]</span>
+mbar = (N2.mmr/N2.weight + O2.mmr/O2.weight + O1.mmr/O1.weight + He.mmr/He.weight).^-1;
+
+<span class="comment">% Scale Heights for each species and for general atm.</span>
+[H_P, H_T, H_T_He, H_rho_diff, H_rho_star] = ScaleHeight(N2, O2, O1, He, Tn, mbar, zp, den, g0, Av, kb);
+
+<span class="comment">% Omega "winds" and needed gradients</span>
+omega = wn./H_P;                   <span class="comment">% TIEGCM omega for every lon/alt [1/s]</span>
+omegaGrad = zeros(size(omega));    <span class="comment">% gradient of omega w.r.t Z</span>
+omegaExpGrad = omegaGrad;          <span class="comment">% gradient of omega * exp(-Z) w.r.t Z</span>
+<span class="keyword">for</span> l = 1:lonPts
+   omegaGrad(l,:) = ThreePtGrad( Z(l,:), omega(l,:) );
+   omegaExpGrad(l,:) = ThreePtGrad( Z(l,:), exp(-Z(l,:)) .* omega(l,:) );
+<span class="keyword">end</span>
+
+<span class="comment">% Vertical Advection Terms and assign to Objects</span>
+VertAdvection(omega, Z, p0, g0, N2, O2, O1, He)
+
+<span class="comment">% Horizontal Mass Flux Divergence Terms for objecta and total gas</span>
+Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
+</pre><h2 id="6">Plot Total Gas Features</h2><pre class="codeinput">saveFig = <span class="string">'0'</span>;
+PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+</pre><img vspace="5" hspace="5" src="TIEGCMPub_01.png" alt=""> <h2 id="7">Plot Specific Species Behavior</h2><pre class="codeinput">PLOT_Species(zp, z_ilev, lon, lon_want, lat_want, omega, plotname, savename, He)
+</pre><img vspace="5" hspace="5" src="TIEGCMPub_02.png" alt=""> <img vspace="5" hspace="5" src="TIEGCMPub_03.png" alt=""> <h2 id="8">-------------- CLASSES ---------------------</h2><h2 id="9">A 'TIEGCMspecies' object</h2><pre class="language-matlab">
+<span class="keyword">classdef</span> TIEGCMspecies &lt; handle
+    <span class="comment">% Class definition for each species of the TIEGCM output. All units are</span>
+    <span class="comment">% SI, i.e. [kg, m, s]</span>
+    
+    <span class="keyword">properties</span> (Constant)
+        ATOM_UNIT = 1.6605e-27;         <span class="comment">% [kg/amu]</span>
+        lonPts = 144;
+        altPts = 57;
+    <span class="keyword">end</span>
+    
+    <span class="keyword">properties</span> (SetAccess = immutable)
+        <span class="comment">% Can only set in Constructor</span>
+        name
+        weight
+        mass
+        mmr
+        mmrGrad
+        n
+        rho        
+    <span class="keyword">end</span>
+    
+    <span class="keyword">properties</span> (SetAccess = private)  
+        Hp
+        H_diff
+        H_star 
+        H_percent
+        Di
+        Vert_Adv
+        Hor_MDiv
+    <span class="keyword">end</span>
+    
+    
+    <span class="keyword">methods</span>
+        
+        <span class="comment">% ---- CONSTRUCTOR ------ </span>
+        <span class="keyword">function</span> obj = TIEGCMspecies(name, amu, MMR, Den, Z)         
+            obj.name = name;                                <span class="comment">% name of atom [string]</span>
+            obj.weight = amu/1000;                          <span class="comment">% weight of atom [kg/mol]</span>
+            obj.mass = amu * obj.ATOM_UNIT;                     <span class="comment">% atomic mass of species [kg]</span>
+            obj.mmr = CONVERT2ILEV(MMR, obj.lonPts, obj.altPts);    <span class="comment">% mass mixing ratio on ilevs</span>
+
+            <span class="comment">% Number density [1/m^3] on ilevs</span>
+            obj.n = obj.mmr .* Den;
+            
+            <span class="comment">% Mass density [kg/m^3] on ilevs</span>
+            obj.rho = obj.mmr .* Den; 
+            
+            <span class="comment">% MMR gradient w.r.t pressure coord Z = ln(p/p0)</span>
+            <span class="keyword">for</span> l = 1:obj.lonPts
+                obj.mmrGrad(l,:) = ThreePtGrad(Z(l,:), obj.mmr(l,:));
+            <span class="keyword">end</span>
+            
+        <span class="keyword">end</span>
+        
+        <span class="comment">% ---- Change The Scale Heights ------ </span>
+        <span class="keyword">function</span> obj = setScaleHeights(obj, Hp, H_diff, H_star)
+            
+            test = [size(Hp); size(H_diff); size(H_star)];
+            matrx = [obj.lonPts, obj.altPts];   
+            
+            <span class="keyword">if</span> (test(1,:) ~=  matrx) | (test(2,:) ~=  matrx) | (test(3,:) ~=  matrx)
+                error(<span class="string">"Scale height matrix has wrong size."</span>);
+            <span class="keyword">else</span>                
+                <span class="comment">% Initialize the scale heights</span>
+                obj.Hp = Hp;
+                obj.H_diff = H_diff;
+                obj.H_star = H_star; 
+                
+                <span class="comment">% Calculate Percents Difference from Diffusive Eq.</span>
+                obj.H_percent = ((obj.H_star ./ obj.H_diff) - 1) * 100;
+            <span class="keyword">end</span>  
+           
+            
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the molecular Diffusion Coefficient </span>
+        <span class="keyword">function</span> obj = setD(obj, Di)
+            <span class="keyword">if</span> size(Di) ~= [obj.lonPts, obj.altPts]
+                error(<span class="string">"Diffusion Coefficient Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Di = Di; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the vertical advection term </span>
+        <span class="keyword">function</span> obj = setVertAdvec(obj, Vert_Adv)
+            <span class="keyword">if</span> size(Vert_Adv) ~= [obj.lonPts, obj.altPts]
+                error(<span class="string">"Vertical Advection Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Vert_Adv = Vert_Adv; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the horizontal divergence term</span>
+        <span class="keyword">function</span> obj = setHorMassFluxDiv(obj, Hor_MDiv)
+            <span class="keyword">if</span> size(Hor_MDiv) ~= [obj.lonPts, obj.altPts]
+                error(<span class="string">"Horizontal Divergence Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Hor_MDiv = Hor_MDiv; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+    <span class="keyword">end</span>        
+<span class="keyword">end</span>
+
+
+</pre><h2 id="10">-------------- FUNCTIONS ------------------</h2><h2 id="11">-- Diffusion Coefficient Calculation</h2><pre class="language-matlab">
+<span class="keyword">function</span> [] = DiffCoeff(T, P, N2, O2, O1, He)
+    <span class="comment">% set all the molecular diffusion coefficients</span>
+    N2.setD( Di_TIEGCM(<span class="string">'N2'</span>, T, P) );      <span class="comment">% [m^2/s]</span>
+    O2.setD( Di_TIEGCM(<span class="string">'O2'</span>, T, P) );
+    O1.setD( Di_TIEGCM(<span class="string">'O1'</span>, T, P) );
+    He.setD( Di_TIEGCM(<span class="string">'He'</span>, T, P) );
+    
+<span class="keyword">end</span>
+
+
+</pre><pre class="language-matlab">
+<span class="keyword">function</span> [D_i] = Di_TIEGCM(species, T, p)
+<span class="comment">% Calculates the molecular diffusion coefficient using TIEGCM values</span>
+
+<span class="comment">% T = input array of tempurates [K] vs. altitude at specific lat, lon, and UT</span>
+<span class="comment">% P = input array of pressures [Pa] vs. altitude at specific lat, lon, and UT</span>
+<span class="comment">% D_i = output array of species diffusion coefficient in [m^2/s]</span>
+
+T0 = 273;       <span class="comment">% reference Temp [K]</span>
+p0 = 1E5;       <span class="comment">% reference pressure [Pa]</span>
+
+<span class="keyword">switch</span> species
+    <span class="keyword">case</span> <span class="string">'N2'</span>
+        <span class="comment">% [O2-N2, O-N2, He-N2] </span>
+        a = [0.18; 0.26; 0.612661];       <span class="comment">%[cm^2/s]  </span>
+        s = [1.75; 1.75; 1.718];
+    <span class="keyword">case</span> <span class="string">'O2'</span>
+        <span class="comment">% [O2-N2, O2-O, O2-He]</span>
+        a = [0.18; 0.26; 0.648966];
+        s = [1.75; 1.75; 1.71];
+    <span class="keyword">case</span> <span class="string">'O1'</span>
+        <span class="comment">% [O-N2, O-O2, O-He]</span>
+        a = [0.26; 0.26; 0.865538];
+        s = [1.75; 1.75; 1.749]; 
+    <span class="keyword">case</span> <span class="string">'He'</span>
+        <span class="comment">% [He-N2, He-O2, He-O]</span>
+        a = [0.621661; 0.648966; 0.865539];
+        s = [1.718; 1.710; 1.749];
+<span class="keyword">end</span>
+
+D_i = 0;
+
+<span class="keyword">for</span> i=1:3
+    D_i = D_i + ( a(i) .* (T./T0).^s(i) .* (p0./p) ) ./ 1E4; <span class="comment">% [m^2/s]</span>
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+
+</pre><h2 id="12">-- Horizontal Total Mass Flux Divergence Calculation</h2><pre class="language-matlab">
+<span class="keyword">function</span> [Tot_MDiv] = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, varargin)
+<span class="comment">% Sets the horizontal mass flux divergence terms for each object and</span>
+<span class="comment">% returns the mass flux divergence for the total gas []</span>
+
+    val = -p0 / g0 .* omegaExpGrad;
+    
+    <span class="comment">% number of species objects given</span>
+    <span class="keyword">for</span> i = 1:length(varargin)
+        Obj = varargin{1,i};
+        Obj.setHorMassFluxDiv(val .* Obj.mmr);
+    <span class="keyword">end</span>
+
+    Tot_MDiv = -exp(Z) .* omegaExpGrad;
+<span class="keyword">end</span>
+
+</pre><h2 id="13">-- Vertical Advection Calculation</h2><pre class="language-matlab">
+<span class="keyword">function</span> [] = VertAdvection(omega, Z, p0, g0, varargin)
+<span class="comment">% Sets the vertical advection terms for each object</span>
+
+    val = p0 / g0 .* exp(-Z) .* omega;
+  
+    <span class="comment">% number of species objects given</span>
+    <span class="keyword">for</span> i = 1:length(varargin)
+        Obj = varargin{1,i};
+        Obj.setVertAdvec(val .* Obj.mmrGrad);
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+
+</pre><h2 id="14">-- Scale Height Calculation</h2><pre class="language-matlab">
+<span class="keyword">function</span> [H_P, H_T, H_T_He, H_rho_diff, H_rho_star] = ScaleHeight(N2, O2, O1, He, tn, mbar, zp, den, g0, Av, kb)
+    
+    <span class="comment">%-----Finding Pressure Scale Heights for gas constituents from kT/mg-----</span>
+    H_P = kb * tn ./ (mbar/Av .* g0);                   <span class="comment">% mean pressure scale height [m]</span>
+    Hp_n2 = kb * tn ./ (N2.mass * g0);               <span class="comment">% N2 press. scale height [m]</span>
+    Hp_o2 = kb * tn ./ (O2.mass * g0);               <span class="comment">% O2 press. scale height [m]</span>
+    Hp_o1 = kb * tn ./ (O1.mass * g0);               <span class="comment">% O1 press. scale height [m]</span>
+    Hp_he = kb * tn ./ (He.mass * g0);               <span class="comment">% He press. scale height [m]</span>
+
+    <span class="comment">% Calculate Scale Heights Using 3pt Differentiation Technique    </span>
+    points = zeros(size(tn));
+    H_he = points;
+    H_n2 = points;
+    H_o1 = points;
+    H_o2 = points;
+    H_T = points;
+    H_mass = points;
+    H_rho_star = points; 
+
+    <span class="comment">% ----- 2 Dimensional 3 Point Gradient -------</span>
+    <span class="keyword">for</span> l = 1:N2.lonPts
+        <span class="keyword">for</span> z = 1:N2.altPts
+            <span class="keyword">if</span> z == 1   <span class="comment">% First Point gradient technique</span>
+                coeff1 = (2*zp(l,1)-zp(l,2)-zp(l,3))/((zp(l,1)-<span class="keyword">...</span>
+                    zp(l,2))*(zp(l,1)-zp(l,3)));
+
+                coeff2 = (2*zp(l,1)-zp(l,1)-zp(l,3))/((zp(l,2)-<span class="keyword">...</span>
+                    zp(l,1))*(zp(l,2)-zp(l,3)));
+
+                coeff3 = (2*zp(l,1)-zp(l,1)-zp(l,2))/((zp(l,3)-<span class="keyword">...</span>
+                    zp(l,1))*(zp(l,3)-zp(l,2)));
+
+                H_he(l,1) = -1/He.rho(l,1)*(He.rho(l,1)*coeff1+He.rho(l,2)*coeff2+<span class="keyword">...</span>
+                    He.rho(l,3)*coeff3);
+                H_rho_star(l,1) = -1/den(l,1)*(den(l,1)*coeff1+den(l,2)*coeff2+<span class="keyword">...</span>
+                    den(l,3)*coeff3);
+                H_n2(l,1) = -1/N2.rho(l,1)*(N2.rho(l,1)*coeff1+N2.rho(l,2)*coeff2+<span class="keyword">...</span>
+                    N2.rho(l,3)*coeff3);
+                H_o1(l,1) = -1/O1.rho(l,1)*(O1.rho(l,1)*coeff1+O1.rho(l,2)*coeff2+<span class="keyword">...</span>
+                    O1.rho(l,3)*coeff3);
+                H_o2(l,1) = -1/O2.rho(l,1)*(O2.rho(l,1)*coeff1+O2.rho(l,2)*coeff2+<span class="keyword">...</span>
+                    O2.rho(l,3)*coeff3);
+                H_T(l,1) = 1/tn(l,1)*(tn(l,1)*coeff1+tn(l,2)*coeff2+<span class="keyword">...</span>
+                    tn(l,3)*coeff3);
+                H_mass(l,1) = -1/mbar(l,1)*(mbar(l,1)*coeff1+mbar(l,2)*coeff2+<span class="keyword">...</span>
+                    mbar(l,3)*coeff3);
+
+
+            <span class="keyword">elseif</span> z == N2.altPts <span class="comment">%Last point gradient technique</span>
+                coeff1 = (2*zp(l,z)-zp(l,z-1)-zp(l,z))/((zp(l,z-2)-<span class="keyword">...</span>
+                    zp(l,z-1))*(zp(l,z-2)-zp(l,z)));
+
+                coeff2 = (2*zp(l,z)-zp(l,z-2)-zp(l,z))/((zp(l,z-1)-<span class="keyword">...</span>
+                    zp(l,z-2))*(zp(l,z-1)-zp(l,z)));
+
+                coeff3 = (2*zp(l,z)-zp(l,z-2)-zp(l,z-1))/((zp(l,z)-<span class="keyword">...</span>
+                    zp(l,z-2))*(zp(l,z)-zp(l,z-1)));
+
+                H_he(l,z) = -1/He.rho(l,z)*(He.rho(l,z-2)*coeff1+He.rho(l,z-1)*coeff2+<span class="keyword">...</span>
+                    He.rho(l,z)*coeff3);
+                H_rho_star(l,z) = -1/den(l,z)*(den(l,z-2)*coeff1+den(l,z-1)*coeff2+<span class="keyword">...</span>
+                    den(l,z)*coeff3);
+                H_n2(l,z) = -1/N2.rho(l,z)*(N2.rho(l,z-2)*coeff1+N2.rho(l,z-1)*coeff2+<span class="keyword">...</span>
+                    N2.rho(l,z)*coeff3);            
+                H_o1(l,z) = -1/O1.rho(l,z)*(O1.rho(l,z-2)*coeff1+O1.rho(l,z-1)*coeff2+<span class="keyword">...</span>
+                    O1.rho(l,z)*coeff3); 
+                H_o2(l,z) = -1/O2.rho(l,z)*(O2.rho(l,z-2)*coeff1+O2.rho(l,z-1)*coeff2+<span class="keyword">...</span>
+                    O2.rho(l,z)*coeff3);
+                H_T(l,z) = 1/tn(l,z)*(tn(l,z-2)*coeff1+tn(l,z-1)*coeff2+<span class="keyword">...</span>
+                    tn(l,z)*coeff3);
+                H_mass(l,z) = -1/mbar(l,z)*(mbar(l,z-2)*coeff1+mbar(l,z-1)*coeff2+<span class="keyword">...</span>
+                    mbar(l,z)*coeff3);
+
+
+            <span class="keyword">else</span> <span class="comment">% Middle Points gradient technique</span>
+                coeff1 = (2*zp(l,z)-zp(l,z)-zp(l,z+1))/((zp(l,z-1)-<span class="keyword">...</span>
+                    zp(l,z))*(zp(l,z-1)-zp(l,z+1)));
+
+                coeff2 = (2*zp(l,z)-zp(l,z-1)-zp(l,z+1))/((zp(l,z)-<span class="keyword">...</span>
+                    zp(l,z-1))*(zp(l,z)-zp(l,z+1)));
+
+                coeff3 = (2*zp(l,z)-zp(l,z-1)-zp(l,z))/((zp(l,z+1)-<span class="keyword">...</span>
+                    zp(l,z-1))*(zp(l,z+1)-zp(l,z)));
+
+                H_he(l,z) = -1/He.rho(l,z)*(He.rho(l,z-1)*coeff1+He.rho(l,z)*coeff2+<span class="keyword">...</span>
+                    He.rho(l,z+1)*coeff3);
+                H_rho_star(l,z) = -1/den(l,z)*(den(l,z-1)*coeff1+den(l,z)*coeff2+<span class="keyword">...</span>
+                    den(l,z+1)*coeff3);
+                H_n2(l,z) = -1/N2.rho(l,z)*(N2.rho(l,z-1)*coeff1+N2.rho(l,z)*coeff2+<span class="keyword">...</span>
+                    N2.rho(l,z+1)*coeff3);
+                H_o1(l,z) = -1/O1.rho(l,z)*(O1.rho(l,z-1)*coeff1+O1.rho(l,z)*coeff2+<span class="keyword">...</span>
+                    O1.rho(l,z+1)*coeff3);
+                H_o2(l,z) = -1/O2.rho(l,z)*(O2.rho(l,z-1)*coeff1+O2.rho(l,z)*coeff2+<span class="keyword">...</span>
+                    O2.rho(l,z+1)*coeff3);
+                H_T(l,z) = 1/tn(l,z)*(tn(l,z-1)*coeff1+tn(l,z)*coeff2+<span class="keyword">...</span>
+                    tn(l,z+1)*coeff3);                               
+                H_mass(l,z) = -1/mbar(l,z)*(mbar(l,z-1)*coeff1+mbar(l,z)*coeff2+<span class="keyword">...</span>
+                    mbar(l,z+1)*coeff3);
+
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    
+    <span class="comment">%-----Get Scale Height from Inverse-----</span>
+    H_N2_star = 1./H_n2;
+    H_O2_star = 1./H_o2;
+    H_O1_star = 1./H_o1;
+    H_He_star = 1./H_he;
+    
+    H_T = 1./H_T;
+    H_T_He = H_T/.62;                     <span class="comment">% &lt;---- Alpha for helium is -.38</span>
+    H_m = 1./H_mass;
+    H_rho_diff = (1./H_T + 1./H_P + 1./H_m).^-1;   <span class="comment">% Atmospheric diffusive density scale height</span>
+    H_rho_star = 1./H_rho_star;
+
+
+    <span class="comment">%----Put Together Diffusive Profiles and Mean Mass Profile-----</span>
+    H_N2_diff = (1./H_T + 1./Hp_n2).^-1;        <span class="comment">% N2 Diffusive profile</span>
+    H_O2_diff = (1./H_T + 1./Hp_o2).^-1;        <span class="comment">% O2 diffusie profile</span>
+    H_O1_diff = (1./H_T + 1./Hp_o1).^-1;        <span class="comment">% O1 Diffusive profile</span>
+    H_He_diff = (1./H_T_He + 1./Hp_he).^-1;     <span class="comment">% Helium diffusive profile</span>
+
+
+    <span class="comment">% Set all the object scale heights and return general values to main</span>
+    N2.setScaleHeights(Hp_n2, H_N2_diff, H_N2_star);
+    O2.setScaleHeights(Hp_o2, H_O2_diff, H_O2_star);
+    O1.setScaleHeights(Hp_o1, H_O1_diff, H_O1_star);
+    He.setScaleHeights(Hp_he, H_He_diff, H_He_star);
+     
+<span class="keyword">end</span>
+
+
+</pre><h2 id="15">-- Converting from lev to ilevs</h2><pre class="language-matlab">
+<span class="keyword">function</span> [feat_ilev] = CONVERT2ILEV(feat_lev, slicePts, altPts)
+<span class="comment">% converts TIEGCM matrix on the midpoint levels to matrix on interface</span>
+<span class="comment">% levels</span>
+
+<span class="comment">% feat_lev = matrix containing features on levs with size of [slicePts, altPts]</span>
+<span class="comment">% slicePts, can be either numbers lat points or lon points. whatever you want</span>
+<span class="comment">% altPts =  number of altitude points</span>
+    
+feat_ilev = zeros( size(feat_lev) );
+
+<span class="comment">% find average between elements to get on the interfaces</span>
+    <span class="keyword">if</span> slicePts ~= 0
+        <span class="keyword">for</span> alt = 1:altPts
+            <span class="keyword">if</span> alt ~= 1           
+                <span class="keyword">for</span> slc = 1:slicePts
+                    <span class="keyword">if</span> slc ~= 1           
+                        feat_ilev(slc,alt) = 0.5*(feat_lev(slc,alt) + feat_lev(slc-1, alt-1));
+                    <span class="keyword">else</span>       
+                        feat_ilev(slc,alt) = feat_lev(slc,alt);        
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+
+            <span class="keyword">else</span>
+                <span class="keyword">for</span> slc = 1:slicePts
+                    <span class="keyword">if</span> slc ~= 1   
+                        feat_ilev(slc,alt) = 0.5*(feat_lev(slc,alt) + feat_lev(slc-1, alt));
+                    <span class="keyword">else</span>       
+                        feat_ilev(slc,alt) = feat_lev(slc,alt);          
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+    <span class="keyword">else</span>    <span class="comment">% only converting an array</span>
+        <span class="keyword">for</span> alt = 1:altPts
+            <span class="keyword">if</span> alt ~= 1           
+                feat_ilev(alt) = 0.5*(feat_lev(alt) + feat_lev(alt-1));
+            <span class="keyword">else</span>
+                feat_ilev(alt) = feat_lev(alt);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    
+<span class="keyword">end</span>
+
+
+
+
+</pre><p>Hannah Holt CU BOULDER Aerospace Engineering Sciences. Thank you.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% TIEGCM Continuity and Momentum Equation Analysis Program
+% The programs and functions used to evaluate the different terms in the momentum equation for the thermosphere. Written by Hannah Holt. Last Updated 9/4/2019
+
+%% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH MAIN REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%% Define Program Characteristics
+close all;
+
+output = '~/Documents/MATLAB/TIEGCM/TIEGCM_output/';
+FigFolder = './Figures/';
+addpath(output, FigFolder);
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+ut_want = 1;        % what time segment desired from simulation
+feat = 1;           % Select latitude and longitude desired
+pdrag = 1;          % 1 if pdrag file used, 0 if not
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- Global Features REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+if feat == 1
+lon_want = 95;          % North nighttime maximum feature
+lat_want = 61.25;
+savename = 'N_He_max';
+plotname = 'HELIUM ENHANCEMENT AT 400 KM';
+end
+if feat == 2 
+lon_want = 85;          % South nighttime maximum feature
+lat_want = -58.75;
+savename = 'S_He_max';
+plotname = 'HELIUM ENHANCEMENT AT 400 KM';
+end
+if feat == 3 
+lon_want = -77.5;       % North Daytime minimum feature
+lat_want = 18.75;
+savename = 'N_He_min';
+plotname = 'HELIUM DEPLETION AT 400 KM';
+end
+if feat == 4
+lon_want = -77.5;       % South Daytime minimum feature
+lat_want = -46.25;      % true minimum is at -13.75 in the Southern hemi!!
+savename = 'S_He_min';
+plotname = 'HELIUM DEPLETION AT 400 KM';
+end
+
+%% Loading Viki's TIEGCM Simulation
+if pdrag == 1
+    filename = [output, 'HSUVW.tiegcm2.0_dres.pdrag_f107_180_001.nc'];
+    id = 'pdrag';
+end
+if pdrag == 0
+    filename = [output, 'HSUVW.tiegcm2.0_dres.nodragtest_ctrSS_f107_180_001.nc'];
+    id = 'no Ion Drag';
+end
+
+% Parse Data from file
+den = ncread(filename,'DEN') / 1e3;     % total density [kg/m^3] ILEV
+zp = ncread(filename, 'Z') / 100;       % geopotential height [m] on ILEV
+p0 = ncread(filename, 'p0_model') / 10; % p0 reference pressure used by model [Pascals]
+g0 = ncread(filename, 'grav') / 100;    % const. gravitational acceleration [m/s]
+z_ilev = ncread(filename, 'ilev');      % interface pressure level
+Tn = ncread(filename,'TN');             % temperature on levs [K] 
+lat = ncread(filename,'lat');           % latitude points
+lon = ncread(filename,'lon');           % longitude points [-180, 180]
+wn = ncread(filename,'WN')/100;         % neutral vertical winds on ilev [m/s]
+
+% make a 144x57 matrix with each whole column being one of the pressure ilevs. 
+% (i.e. rows are all the same for a given column)
+Z = repmat(z_ilev', size(den,1), 1 );   
+
+P = p0 .* exp(-Z);                      % pressure array on ilevs [Pa]
+altPts = size(z_ilev);
+lonPts = size(lon);
+
+he = ncread(filename,'HE');             % Units of mass mixing ratio
+n2 = ncread(filename,'N2');
+o2 = ncread(filename,'O2');
+o1 = ncread(filename,'O1');
+
+% Condense to UT time and latitude  
+i = find(lat == lat_want);
+
+den = squeeze(den(:, i, :, ut_want+1));        
+n2 = squeeze(n2(:, i , :, ut_want+1));
+o2 = squeeze(o2(:, i, :, ut_want+1));
+o1 = squeeze(o1(:, i, :, ut_want+1));
+he = squeeze(he(:, i, :, ut_want+1));
+zp = squeeze(zp(:, i, :, ut_want+1));
+Tn = squeeze(Tn(:, i, :, ut_want+1));            
+wn = squeeze(wn(:, i, :, ut_want+1)); 
+
+% put Temperature on ilevs
+Tn = CONVERT2ILEV(Tn, lonPts, altPts);
+
+%% Initialize Objects
+N2 = TIEGCMspecies('N2', 28.01, n2, den, Z);
+O2 = TIEGCMspecies('O2', 32, o2, den, Z);
+O1 = TIEGCMspecies('O1', 16, o1, den, Z);
+He = TIEGCMspecies('He', 4, he, den, Z);
+
+
+%% Main Function Calls
+% Diffusion Coefficients for each species
+DiffCoeff(Tn, P, N2, O2, O1, He)
+
+% Thermal diffusion coefficient
+D_Ti = -0.36 * He.Di; 
+
+% mean molecular mass on ilevs [kg/mol]
+mbar = (N2.mmr/N2.weight + O2.mmr/O2.weight + O1.mmr/O1.weight + He.mmr/He.weight).^-1;        
+
+% Scale Heights for each species and for general atm. 
+[H_P, H_T, H_T_He, H_rho_diff, H_rho_star] = ScaleHeight(N2, O2, O1, He, Tn, mbar, zp, den, g0, Av, kb);
+
+% Omega "winds" and needed gradients
+omega = wn./H_P;                   % TIEGCM omega for every lon/alt [1/s]
+omegaGrad = zeros(size(omega));    % gradient of omega w.r.t Z
+omegaExpGrad = omegaGrad;          % gradient of omega * exp(-Z) w.r.t Z
+for l = 1:lonPts
+   omegaGrad(l,:) = ThreePtGrad( Z(l,:), omega(l,:) );
+   omegaExpGrad(l,:) = ThreePtGrad( Z(l,:), exp(-Z(l,:)) .* omega(l,:) );
+end
+
+% Vertical Advection Terms and assign to Objects
+VertAdvection(omega, Z, p0, g0, N2, O2, O1, He)
+
+% Horizontal Mass Flux Divergence Terms for objecta and total gas 
+Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);       
+
+
+%% Plot Total Gas Features
+saveFig = '0';
+PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+
+%% Plot Specific Species Behavior
+PLOT_Species(zp, z_ilev, lon, lon_want, lat_want, omega, plotname, savename, He)
+
+%% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH CLASSES REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+%% A 'TIEGCMspecies' object
+% <include>TIEGCMspecies.m</include>
+%
+
+%% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH FUNCTIONS REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%% REPLACE_WITH_DASH_DASH Diffusion Coefficient Calculation
+%
+% <include>DiffCoeff.m</include>
+%
+% <include>Di_TIEGCM.m</include>
+%
+
+
+%% REPLACE_WITH_DASH_DASH Horizontal Total Mass Flux Divergence Calculation
+%
+% <include>HorMassFluxDivergence.m</include>
+%
+
+
+%% REPLACE_WITH_DASH_DASH Vertical Advection Calculation
+%
+% <include>VertAdvection.m</include>
+%
+
+%% REPLACE_WITH_DASH_DASH Scale Height Calculation
+%
+% <include>ScaleHeight.m</include>
+%
+
+%% REPLACE_WITH_DASH_DASH Converting from lev to ilevs
+%
+% <include>CONVERT2ILEV.m</include>
+%
+
+
+%%
+% Hannah Holt 
+% CU BOULDER Aerospace Engineering Sciences.
+% Thank you.
+##### SOURCE END #####
+--></body></html>
