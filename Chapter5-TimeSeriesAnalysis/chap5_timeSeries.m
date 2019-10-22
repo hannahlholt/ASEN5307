@@ -1,5 +1,7 @@
-%% Chapter 5 Time series Analysis
+% Chapter 5 Time series Analysis
 
+FigFolder = './Figures/';
+addpath(FigFolder);
 
 % if the time series doesn't exist, then run the LOADfiles script.
 if exist('t_series', 'var') == 0
@@ -11,7 +13,7 @@ end
 dt = t_series.t(2) - t_series.t(1);         % sampling period [day]
 fs = 1/dt;                                  % sampling frequency [1/day]
 
-% --- PERIODOGRAM VALUES ------
+%% --- PERIODOGRAM VALUES ------
 % quiet time
 stop = find(t_series.t == 80);
 denq = t_series.Den(1:stop);
@@ -27,10 +29,9 @@ nfft = 2^nextpow2(length(denst_dt));        % next power of 2 to use for fft poi
 [Pxxst, fst] = periodogram(denst_dt, [], nfft, fs);
 
 
+%%-------- Autospectrums --------- 
 
-
-
-%% --------- 
+% the cross spectrum analysis was done in Python using Greg Lucas's wavelet code!!
 
 figure('units', 'normalized', 'outerposition',[0 1 .8 1]);
 
@@ -69,6 +70,10 @@ xlabel('Frequency [1/days]')
 ylabel('Normalized Power');
 grid on;
 
+
+
+%% export data to work with python
+csvwrite('~/Documents/Python/t_series_data.csv', t_series.Den);
 
 
 

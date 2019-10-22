@@ -1,8 +1,9 @@
 close all;
 
-output = '/home/haho3703/MATLAB/TIEGCM_files/lowF107.lowtohighKp/';
+TIEGCMoutput = '/home/haho3703/MATLAB/TIEGCM_files/lowF107.lowtohighKp/';
+UtilitiesFolder = '/home/haho3703/MATLAB/ASEN5307/Utilities';
 FigFolder = './Figures/';
-addpath(output, FigFolder);
+addpath(TIEGCMoutput, FigFolder, UtilitiesFolder);
 
 %----------------
 ut_want = 0;        % what time segment desired from simulation
@@ -46,15 +47,15 @@ end
 %-----Loading Viki's tiegcm simulation-----
 % format is (lon,lat,ilev,UT) 
 if pdrag == 1
-    filename = [output, 'HSUVW.tiegcm2.0_dres.pdrag_f107_180_001.nc'];
+    filename = [TIEGCMoutput, 'HSUVW.tiegcm2.0_dres.pdrag_f107_180_001.nc'];
     id = 'pdrag';
 end
 if pdrag == 0
-    filename = [output, 'HSUVW.tiegcm2.0_dres.nodragtest_ctrSS_f107_180_001.nc'];
+    filename = [TIEGCMoutput, 'HSUVW.tiegcm2.0_dres.nodragtest_ctrSS_f107_180_001.nc'];
     id = 'no Ion Drag';
 end
 if pdrag == 2
-    filename = [output, 's0', num2str(day_want),'.nc'];
+    filename = [TIEGCMoutput, 's0', num2str(day_want),'.nc'];
 end
 % ----------- Parse Data from file -------------- 
 den = ncread(filename,'DEN') / 1e3;     % total density [kg/m^3] ILEV

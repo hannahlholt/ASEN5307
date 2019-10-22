@@ -5,9 +5,11 @@ close all;
 output = '~/MATLAB/TIEGCM_files/';
 runtype = 'lowF107.lowtohighKp/';
 files = dir([output, runtype, '*.nc']);
+FigFolder = './Figures/';
+addpath(FigFolder);
 
 day_want = 80;
-
+%%
 modeltime = [];
 Kp = [];
 he = [];
@@ -62,10 +64,13 @@ binspace = linspace(xmin, xmax, num_bins);
 figure();
 h = histogram(den_data, binspace);
 grid on;
-sgtitle(['Global density distribution @ Z = ', num2str(Z(z_want)), ', (~400 km)'])
-title(['Day ', num2str(day_want), ', ',  num2str(hr_want), ':00']);
+line1 = ['Global density distribution @ Z = ', num2str(Z(z_want)), ', (~400 km)'];
+line2 = ['Day ', num2str(day_want), ', ',  num2str(hr_want), ':00'];
+title({line1, line2});
 xlabel('Total Mass Denisty, \rho [kg/m^3]');
 n_meas = h.Values;
+saveas(gcf, [FigFolder, 'GlobalDensityHistogram.png'])
+
 
 midpoints = binspace(1:end-1)+h.BinWidth;
 
@@ -76,9 +81,11 @@ n_syn = sum(n_meas) * n_syn;               % scale to data meas
 
 figure()
 subplot(1,2,1), bar(midpoints, n_syn, 'r');
+title('Synthetic Gaussian for \chi^2')
 subplot(1,2,2), bar(midpoints, n_meas, 'b');
+title('Actual Data for \chi^2')
 
-% Chi^2 test
+%% Chi^2 test
 chi2calc = sum(((n_meas - n_syn).^2) ./ n_syn);
 DegofFr = h.NumBins - (2 + 1);
 ConfLvl = 0.95;  %(2 sigma confidence lvl)
@@ -92,7 +99,7 @@ end
 [h, p, stats] = chi2gof(den_data);
 
 
-%% Compare global temperature and density at specific UT and pressure lvl (=
+%% Compare global temp and density at specific UT and pressure lvl (=
 % 22) to see if they are associated
 temp_data = tn_z_ut(:);
 
@@ -121,7 +128,10 @@ n_meas2 = h2.Values;
 bin_mid2 = h2.BinEdges(1:end-1) + h2.BinWidth;
 
 sgtitle(['Global distributions @ Z = ', num2str(Z(z_want)), ', (~400 km)'])
+saveas(gcf, [FigFolder, 'Dens&TempHistogram.png'])
 
+
+%% 2D Chi Squared Test - not working...
 % now we want to make a table containing the number of counts for a
 % specific temp/den point
 matrix_den = repmat(n_meas1', 1, h2.NumBins);
@@ -151,37 +161,38 @@ end
 % cross tab tests that x,y are independent of each other
 % - Null Hypoth - they are independent.  If P-value < 0.05, then reject the
 % null!!
+% they are inversely correlated as shown by r12 and r21 values.
+[r, p] =  corrcoef(den_data, temp_data);
 
-[r, p] =  corrcoef(den_data, tn_data)
 
-
-
-%% now we want to look at how the density at z = 3.5 changes as the storm approaches
+%% How density and Kp at z = 3.5 changes as the storm approaches
 
 day_want = [70:1:99];
-% 
-% samps = length(modeltime(1,:));
-% TOD = double(modeltime(1,:))+double(modeltime(2,:))/24+double(modeltime(3,:))/1440;       % time of model day
-% 
-% % find global mean of density at the z = 3.5 level and compare to Kp index
-% rho_mean = squeeze(den(:,:,z_want,:));
-% rho_mean = squeeze(mean(rho_mean, [1 2 ]));
-% 
-% figure()
-% subplot(2,1,1)
-% plot(TOD, rho_mean)
-% xlim([day_want(1), day_want(end)]);
-% title(['Global Mean Density @ Z = ', num2str(Z(z_want)), ', (~400 km)']);
-% ylabel('Total Mass Density , \rho [kg/m^3]')
-% grid on;
-% 
-% subplot(2,1,2)
-% plot(TOD, Kp)
-% axis([day_want(1), day_want(end), 0, 5]);
-% title('Kp Index');
-% xlabel('Model Day');
-% grid on;
-% 
+
+samps = length(modeltime(1,:));
+TOD = double(modeltime(1,:))+double(modeltime(2,:))/24+double(modeltime(3,:))/1440;       % time of model day
+
+% find global mean of density at the z = 3.5 level and compare to Kp index
+rho_mean = squeeze(den(:,:,z_want,:));
+rho_mean = squeeze(mean(rho_mean, [1 2 ]));
+
+figure()
+subplot(2,1,1)
+plot(TOD, rho_mean)
+xlim([day_want(1), day_want(end)]);
+title(['Global Mean Density @ Z = ', num2str(Z(z_want)), ', (~400 km)']);
+ylabel('Total Mass Density , \rho [kg/m^3]')
+grid on;
+
+subplot(2,1,2)
+plot(TOD, Kp)
+axis([day_want(1), day_want(end), 0, 5]);
+title('Kp Index');
+xlabel('Model Day');
+grid on;
+
+saveas(gcf, [FigFolder, 'Kp_DenVsTime.png'])
+
 
 
 
