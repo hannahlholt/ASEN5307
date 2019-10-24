@@ -24,10 +24,10 @@ sum = 0;
 for i = 1:N_lon
     for j = 1:N_lat
         dOmega = dphi*dtheta*cos(lat(j) * pi/180);      % solid angle for specific location [sr]
-        sum = sum + x(i,j)*dOmega/(4*pi);   % work with radians
+        sum = sum + x(i,j)*dOmega;   % work with radians
     end 
 end
 
-x_avg = sum/(N_lat*N_lon);
+x_avg = sum/(4*pi);
 end
 

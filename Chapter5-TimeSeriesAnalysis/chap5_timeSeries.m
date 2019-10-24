@@ -70,13 +70,10 @@ xlabel('Frequency [1/days]')
 ylabel('Normalized Power');
 grid on;
 
-
+%%
+ratio = sum(Pxxq(:))/sum(Pxxst(:));
 
 %% export data to work with python
 csvwrite('~/Documents/Python/t_series_data.csv', t_series.Den);
-
-
-
-
 
 
