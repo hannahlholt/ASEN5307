@@ -4,20 +4,40 @@
 
 dt = 0.5;
 fs = 1/dt;
-t = [0:dt:5000];
+t = [0:dt:10000];
+ind = find(t == 3000);
+A = 40;
+B = 100;
+P1 = 50;
+P2 = 100;
 
-A = 23;
-B = 10;
-f1 = 1/50;
-f2 = 1/100;
+x = A * sin(2*pi*t/P1);
+x(ind:end) = x(ind:end) +  B * sin(2*pi*t(ind:end)/P2);
+n = std(x) *  randn(size(t));
+x = x + n;
+nfft = 2^nextpow2(length(x));     % next power of 2 to use for fft points
 
-x = A * sin(2*pi*f1*t)  + B * sin(2*pi*f2*t) + randn(size(t));
+[Px, fq] = periodogram(x, [], nfft, fs);
+xnorm = Px/sum(Px(:));
 
-% x = x + x_noise;
+figure();
+subplot(211);
+plot(t, x);
+title('Signal');
 
-% [cfs,frq]  = ;
+subplot(212);
+plot(1./fq, xnorm);
+set(gca, 'YScale', 'log');
+title('Power spectrum')
+xlabel('Time');
+xlim([0 200])
+grid on;
+
+saveas(gcf, './Powerspectrum.png');
+
+
 cwt(x, 'amor', seconds(dt))
-
+saveas(gcf, './wavelet.png');
 
 % tms = (0:numel(x)-1)/fs;
 % 
