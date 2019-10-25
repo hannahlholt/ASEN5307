@@ -1,5 +1,4 @@
-% this program tries to understand how sucky wavelets work.
-% cool cool
+% this program tries to understand how wavelets work.
 
 % % %  ---- REAL DATA ----
 % T = readtable('t_series_data.csv');
