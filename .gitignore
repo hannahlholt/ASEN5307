@@ -1,0 +1,6 @@
+# ignore Mac type files
+*.DS_Store
+
+# ignore pdfs and pngs
+*.pdf
+*.png
