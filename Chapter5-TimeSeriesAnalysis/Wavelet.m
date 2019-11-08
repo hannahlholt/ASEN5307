@@ -50,23 +50,45 @@ nfft = 2^nextpow2(length(x));     % next power of 2 to use for fft points
 [Px, fq] = periodogram(x, [], nfft, fs);
 xnorm = Px/sum(Px(:));
 
-h = figure();
-subplot(211);
-plot(t, x);
-title('Signal');
+% h = figure();
+% subplot(211);
+% plot(t, x);
+% title('Signal');
+% 
+% subplot(212);
+% plot(1./fq, xnorm);
+% set(gca, 'YScale', 'log');
+% title('Power spectrum')
+% xlabel('Time');
+% xlim(xlimits)
+% grid on;
+% saveas(gcf, name1);
+% 
+% 
+% % waitfor(h)
+% % plot the cwt;
+% cwt(x, 'amor', seconds(dt))
+% saveas(gcf, name2);
 
-subplot(212);
-plot(1./fq, xnorm);
-set(gca, 'YScale', 'log');
-title('Power spectrum')
-xlabel('Time');
-xlim(xlimits)
+
+% now you want to look at the phasing of the cwt
+[wt, period, coi] = cwt(x, 'amor', seconds(dt));
+
+Z = abs(wt);
+[X,Y] = meshgrid(t, seconds(period));
+
+Z1 = repmat(seconds(coi'), length(Z(:,1)), 1);
+Z(Y > Z1) = NaN;
+
+%%
+h1 = figure();
+contourf(X, Y, Z, 100, 'linecolor', 'none')
+hold on;
+colormap jet;
+cbar = colorbar();
+set(gca, 'YScale', 'log')
+ylabel('Period (sec)');
+xlabel('Time (sec)');
+cbar.Label.String = 'Magnitude';
 grid on;
-saveas(gcf, name1);
-
-
-% waitfor(h)
-
-cwt(x, 'amor', seconds(dt))
-saveas(gcf, name2);
 
