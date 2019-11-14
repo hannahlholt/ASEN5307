@@ -74,6 +74,10 @@ grid on;
 ratio = sum(Pxxq(:))/sum(Pxxst(:));
 
 %% export data to work with python
-csvwrite('~/Documents/Python/t_series_data.csv', t_series.Den);
+rptrows = length(t_series.t)/length(t_series.UT);
+rptcols = 1;
+t_series.UT = repmat(t_series.UT, [rptrows, rptcols]);
+
+csvwrite('t_series_data.csv', [t_series.t, t_series.Den, t_series.UT]);
 
 

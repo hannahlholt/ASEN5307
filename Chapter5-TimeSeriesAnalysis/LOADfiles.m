@@ -39,7 +39,7 @@ for i=1:length(filenames)
     % These dont change for the runs
     if i == 1
         Z = ncread(name, 'ilev');           % interface pressure level
-        UT = ncread(name, 'ut');                % UT time from model time hr and minute [hrs]  
+        UT = ncread(name, 'ut');            % UT time from model time hr and minute [hrs]  
         lat = ncread(name, 'lat');
         lon = ncread(name, 'lon');
         p0 = ncread(name, 'p0_model') / 10; % p0 reference pressure used by model [Pascals]
@@ -56,7 +56,7 @@ hr_want = 12;
 Z_mat = repmat(Z, [1, 72, 36]);   
 Z_mat = permute(Z_mat, [2 3 1]);
 
-% sample every 2 hrs
+% sample every 30 min
 step = 1;
 % [Temp, den, mbar] in each column for every time step
 globe_avg = zeros(length(modeltime)/step, 3);
@@ -116,7 +116,7 @@ end
 
 %% now create struct and use this in other programs
 t_series = struct('t', mtime, 'T', globe_avg(:,1), 'Den', globe_avg(:,2), ...
-    'mbar', globe_avg(:,3), 'Zlvl', z_want);
+    'mbar', globe_avg(:,3), 'Zlvl', z_want, 'UT', UT, 'lon', lon);
 %%
 clearvars -except t_series
 run startup.m
