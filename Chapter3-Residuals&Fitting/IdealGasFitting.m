@@ -87,7 +87,8 @@ for t_ind = [1:skip:length(modeltime)]
     mbarx = (N2.mmr/N2.weight + O2.mmr/O2.weight + O1.mmr/O1.weight + He.mmr/He.weight).^-1;     
 
     % now find global mean of Temperature, mbar and den at ~ 400 km
-    
+    % CHANGES ----- KEEP rho and mbar together before averaging
+
     globe_avg(ind,1) = mean(Tnx(:,:,z_want), 'all');      % take mean over lon and lat (i.e. rows and cols)
     globe_avg(ind,2) = mean(denx(:,:,z_want), 'all');
     globe_avg(ind,3) = mean(mbarx(:,:,z_want), 'all');
@@ -97,6 +98,7 @@ end
 
 %%
 % Calculate fits and residuals of Ideal Gas equation
+
 x = 1./globe_avg(:,1);
 y1 = globe_avg(:,2);
 
