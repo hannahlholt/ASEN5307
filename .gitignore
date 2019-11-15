@@ -4,3 +4,6 @@
 # ignore pdfs and pngs
 *.pdf
 *.png
+
+# ignore MATLAB ~ files
+*.m~

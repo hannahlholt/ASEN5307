@@ -1,41 +1,48 @@
 % this program tries to understand how wavelets work.
+close all;
+clear all;
 
-% % %  ---- REAL DATA ----
+%%  ---- REAL DATA ----
 T = readtable('t_series_data.csv');
 
 x_tot = T{:,2};
 t = T{:,1};
+UT = T{:,3};            % universal time
 dt = T{2,1} - T{1,1};    % dt is in hours
 fs = 1/dt;
+xname = '(days)';
 
 % quiet time
-stop = find(t == 79);
+stop = find(t == 80);
 xq = x_tot(1:stop);
-xq_dt = detrend(xq);                % detrend it
+tq = t(1:stop);
+xq_dt = detrend(xq, 2);    % detrend it
 
 % storm time
-start = find(t == 84);
+start = find(t == 82);
 xst = x_tot(start:end);
-xst_dt = detrend(xst);                  % detrend it
+tst = t(start:end);
+xst_dt = detrend(xst, 3);                  % detrend it
 
 % now splice together the storm and quiet time
 x = [xq_dt; xst_dt];
+tsplice = [tq; tst];
 
 name1 = './Figures/Powerspectrum_obs.png';
 name2 = './Figures/Morlet_obs.png';
+name3 = './Figures/MorletPhase_obs.png';
 xlimits = [0, 1.3];
 
-
-
-% ---- SYNTHETIC DATA----
-% dt = 1;
+%% ---- SYNTHETIC DATA----
+% dt = 0.5;
 % fs = 1/dt;
-% t = [0:dt:86400];
-% ind = find(t == 86400/2);
-% A = 10;
-% B = 20;
-% P1 = 100;
-% P2 = 1000;
+% t = [0:dt:10000];
+% xname = '(sec)';
+% ind = find(t == 3000);
+% A = 40;
+% B = 100;
+% P1 = 50;
+% P2 = 100;
 % 
 % x = A * sin(2*pi*t/P1);
 % x(ind:end) = x(ind:end) +  B * sin(2*pi*t(ind:end)/P2);
@@ -43,30 +50,105 @@ xlimits = [0, 1.3];
 % x = x + n;
 % name1 = './Figures/Powerspectrum_syn.png';
 % name2 = './Figures/Morlet_syn.png';
-% xlimits = [0, 2000];
-% 
+% xlimits = [0, 200];
 
+%% ----- COMPUTATIONS ----------
+% ----- COMPUTE POWER SPECTRUM ---------------
 nfft = 2^nextpow2(length(x));     % next power of 2 to use for fft points
 [Px, fq] = periodogram(x, [], nfft, fs);
 xnorm = Px/sum(Px(:));
+ 
+% ----- COMPUTE WAVELET TRANSFORM -------------
+[wt, period, coi] = cwt(x, 'amor', days(dt));
 
-h = figure();
+Z = abs(wt);
+[X,Y] = meshgrid(tsplice, days(period));
+
+% for plotting cone of influence (coi)
+Z1 = repmat(days(coi'), length(Z(:,1)), 1);
+Z(Y > Z1) = NaN;
+
+% ---- COMPUTE PHASE -------
+% 1) one day oscillation
+n = days(1);
+[~, idx1] = min(abs(period-n));
+
+
+% 2) half day oscillation
+n = days(0.5);
+[~, idx2] = min(abs(period-n));
+
+phi = 180/pi*(angle(wt));            % phase angle [-180, 180]
+
+%% ------ PLOTTING -------
+
+% PLOT 1D POWER SPECTRUM
+h0 = figure();
 subplot(211);
-plot(t, x);
+plot(tsplice, x);
 title('Signal');
 
 subplot(212);
 plot(1./fq, xnorm);
 set(gca, 'YScale', 'log');
 title('Power spectrum')
-xlabel('Time');
+xlabel(['Time ', xname]);
 xlim(xlimits)
 grid on;
-% saveas(gcf, name1);
+saveas(h0, name1);
+%
+
+% PLOT WAVELET ANALYSIS
+h1 = figure();
+contourf(X, Y, Z, 100, 'linecolor', 'none')
+hold on;
+colormap jet;
+cbar = colorbar();
+set(gca, 'YScale', 'log')
+ylabel(['Period ', xname]);
+xlabel(['Time ', xname]);
+cbar.Label.String = 'Magnitude';
+grid on;
+saveas(h1, name2);
 
 
-waitfor(h)
+% PLOT PHASE
+h3 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
+A = 72;
+B = 12;
+UTplt = [UT(1:stop); UT(start:end)];
 
-cwt(x, 'amor', seconds(dt))
-% saveas(gcf, name2);
+% -----------------------------------------------
+subplot(211)
+plot(tsplice, phi(idx1,:)); hold on;
+plot(tsplice, zeros(length(tsplice),1), 'k')
+axis([70 A -180 180])
+
+ax = gca;
+ax.XAxis.TickValues = [70:1/B:A];
+oldtick = ax.XAxis.TickValues;
+[~, indx] = min(abs(tsplice-oldtick));
+ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
+title('One Day Periodicity');
+xlabel('UT')
+ylabel('Phase Angle (deg)')
+grid on;
+% -----------------------------------------------
+subplot(212)
+plot(tsplice, phi(idx2,:)); hold on;
+plot(tsplice, zeros(length(tsplice),1), 'k')
+axis([70 A -180 180])
+
+ax = gca;
+ax.XAxis.TickValues = [70:1/B:A];
+oldtick = ax.XAxis.TickValues;
+[~, indx] = min(abs(tsplice-oldtick));
+ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
+title('Half Day Periodicity');
+xlabel('UT')
+ylabel('Phase Angle (deg)')
+grid on;
+saveas(h3, name3);
+
+
 
