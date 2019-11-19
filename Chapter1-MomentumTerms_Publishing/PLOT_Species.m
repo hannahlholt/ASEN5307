@@ -4,7 +4,7 @@ function [] = PLOT_Species(res, x_label, zp, Z, x_slc, xline_want, other_want, o
 % number of species objects given
 
 
-% THIS HAS BEEN UPDATE TO DEAL WITH BOTH latitude and longitude slices!!
+% THIS HAS BEEN UPDATED TO DEAL WITH BOTH latitude and longitude slices!!
 
 
 zp = zp./1000;              % plot in km

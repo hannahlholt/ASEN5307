@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TIEGCM Continuity and Momentum Equation Analysis Program</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-10-27"><meta name="DC.source" content="TIEGCMPub.m"><style type="text/css">
+      --><title>TIEGCM Continuity and Momentum Equation Analysis Program</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-11-19"><meta name="DC.source" content="TIEGCMPub.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,7 +68,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>TIEGCM Continuity and Momentum Equation Analysis Program</h1><!--introduction--><p>The programs and functions used to evaluate the different terms in the momentum equation for the thermosphere. Written by Hannah Holt. Last Updated 9/4/2019</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">-------------- MAIN ----------------------</a></li><li><a href="#2">Define Program Characteristics</a></li><li><a href="#3">Loading Viki's TIEGCM Simulation</a></li><li><a href="#4">Initialize Objects</a></li><li><a href="#5">Main Function Calls</a></li><li><a href="#6">Plot Total Gas Features</a></li><li><a href="#7">Plot Specific Species Behavior</a></li><li><a href="#8">-------------- CLASSES ---------------------</a></li><li><a href="#9">A 'TIEGCMspecies' object</a></li><li><a href="#10">-------------- FUNCTIONS ------------------</a></li><li><a href="#11">-- Diffusion Coefficient Calculation</a></li><li><a href="#12">-- Horizontal Total Mass Flux Divergence Calculation</a></li><li><a href="#13">-- Vertical Advection Calculation</a></li><li><a href="#14">-- Scale Height Calculation</a></li><li><a href="#15">-- Converting from lev to ilevs</a></li></ul></div><h2 id="1">-------------- MAIN ----------------------</h2><h2 id="2">Define Program Characteristics</h2><pre class="codeinput">close <span class="string">all</span>;
 
-output = <span class="string">'~/Documents/MATLAB/TIEGCM/TIEGCM_output/'</span>;
+output = <span class="string">'~/TIEGCM/TIEGCM_files/'</span>;
 FigFolder = <span class="string">'./Figures/'</span>;
 addpath(output, FigFolder);
 
@@ -76,6 +76,7 @@ addpath(output, FigFolder);
 ut_want = 1;        <span class="comment">% what time segment desired from simulation</span>
 feat = 1;           <span class="comment">% Select latitude and longitude desired</span>
 pdrag = 1;          <span class="comment">% 1 if pdrag file used, 0 if not</span>
+res = 2.5;
 
 <span class="comment">% ----- Global Features -------</span>
 <span class="keyword">if</span> feat == 1
@@ -127,8 +128,8 @@ wn = ncread(filename,<span class="string">'WN'</span>)/100;         <span class=
 Z = repmat(z_ilev', size(den,1), 1 );
 
 P = p0 .* exp(-Z);                      <span class="comment">% pressure array on ilevs [Pa]</span>
-altPts = size(z_ilev);
-lonPts = size(lon);
+altPts = length(z_ilev);
+lonPts = length(lon);
 
 he = ncread(filename,<span class="string">'HE'</span>);             <span class="comment">% Units of mass mixing ratio</span>
 n2 = ncread(filename,<span class="string">'N2'</span>);
@@ -148,10 +149,6 @@ Tn = squeeze(Tn(:, i, :, ut_want+1));
 wn = squeeze(wn(:, i, :, ut_want+1));
 
 <span class="comment">% put Temperature on ilevs</span>
-Tn = CONVERT2ILEV(Tn, lonPts, altPts);
-</pre><pre class="codeoutput error">Undefined function 'CONVERT2ILEV' for input arguments of type 'single'.
-
-Error in TIEGCMPub (line 90)
 Tn = CONVERT2ILEV(Tn, lonPts, altPts);
 </pre><h2 id="4">Initialize Objects</h2><pre class="codeinput">N2 = TIEGCMspecies(<span class="string">'N2'</span>, 28.01, n2, den, Z);
 O2 = TIEGCMspecies(<span class="string">'O2'</span>, 32, o2, den, Z);
@@ -182,10 +179,134 @@ VertAdvection(omega, Z, p0, g0, N2, O2, O1, He)
 
 <span class="comment">% Horizontal Mass Flux Divergence Terms for objecta and total gas</span>
 Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
-</pre><h2 id="6">Plot Total Gas Features</h2><pre class="codeinput">saveFig = <span class="string">'0'</span>;
-PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
-</pre><h2 id="7">Plot Specific Species Behavior</h2><pre class="codeinput">PLOT_Species(zp, z_ilev, lon, lon_want, lat_want, omega, plotname, savename, He)
-</pre><h2 id="8">-------------- CLASSES ---------------------</h2><h2 id="9">A 'TIEGCMspecies' object</h2><pre class="error">File 'TIEGCMspecies.m' not found.</pre><h2 id="10">-------------- FUNCTIONS ------------------</h2><h2 id="11">-- Diffusion Coefficient Calculation</h2><pre class="language-matlab">
+</pre><h2 id="6">Plot Total Gas Features</h2><pre class="codeinput">x_label = <span class="string">'Longitude'</span>;
+saveFig = <span class="string">'0'</span>;
+PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
+</pre><img vspace="5" hspace="5" src="TIEGCMPub_01.png" alt=""> <h2 id="7">Plot Specific Species Behavior</h2><p>saveFig = savename;</p><pre class="codeinput">saveFig = <span class="string">'0'</span>;
+PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, plotname, saveFig, He)
+</pre><img vspace="5" hspace="5" src="TIEGCMPub_02.png" alt=""> <h2 id="8">-------------- CLASSES ---------------------</h2><h2 id="9">A 'TIEGCMspecies' object</h2><pre class="language-matlab">
+<span class="keyword">classdef</span> TIEGCMspecies &lt; handle
+    <span class="comment">% Class definition for each species of the TIEGCM output. All units are</span>
+    <span class="comment">% SI, i.e. [kg, m, s]</span>
+    
+    <span class="keyword">properties</span> (Constant)
+        ATOM_UNIT = 1.6605e-27;         <span class="comment">% [kg/amu]</span>
+    <span class="keyword">end</span>
+    
+    <span class="keyword">properties</span> (SetAccess = immutable)
+        <span class="comment">% Can only set in Constructor</span>
+        slcPts          <span class="comment">% slice pts can either be lat or lon</span>
+        altPts
+        name
+        weight
+        mass
+        mmr
+        mmrGrad
+        n
+        rho        
+    <span class="keyword">end</span>
+    
+    <span class="keyword">properties</span> (SetAccess = private)  
+        Hp
+        H_diff
+        H_star 
+        H_percent
+        Di
+        Vert_Adv
+        Hor_MDiv
+    <span class="keyword">end</span>
+    
+    
+    <span class="keyword">methods</span>
+        
+        <span class="comment">% ---- CONSTRUCTOR ------ </span>
+        <span class="keyword">function</span> obj = TIEGCMspecies(name, amu, MMR, Den, Z)   
+            sizeofObj = size(MMR);
+            obj.altPts = sizeofObj(end);
+            obj.slcPts = sizeofObj(1:end-1);            <span class="comment">% takes into account if MMR is 2D or 3D</span>
+            
+            obj.name = name;                            <span class="comment">% name of atom [string]</span>
+            obj.weight = amu/1000;                      <span class="comment">% weight of atom [kg/mol]</span>
+            obj.mass = amu * obj.ATOM_UNIT;                         <span class="comment">% atomic mass of species [kg]</span>
+            obj.mmr = CONVERT2ILEV(MMR, obj.slcPts, obj.altPts);    <span class="comment">% mass mixing ratio on ilevs</span>
+
+            <span class="comment">% Number density [1/m^3] on ilevs</span>
+            obj.n = obj.mmr .* Den;
+            
+            <span class="comment">% Mass density [kg/m^3] on ilevs</span>
+            obj.rho = obj.mmr .* Den; 
+            
+            <span class="comment">% MMR gradient w.r.t pressure coord Z = ln(p/p0) for every</span>
+            <span class="keyword">if</span> length(obj.slcPts) == 1                
+                <span class="keyword">for</span> l = 1:obj.slcPts
+                    obj.mmrGrad(l,:) = ThreePtGrad(Z(l,:), obj.mmr(l,:));
+                <span class="keyword">end</span>
+            <span class="keyword">else</span> <span class="comment">% we have a 3D matrix</span>
+                <span class="keyword">for</span> lon = 1:obj.slcPts(1)
+                    <span class="keyword">for</span> lat = 1:obj.slcPts(2)
+                        obj.mmrGrad(lon,lat,:) = ThreePtGrad(Z(lon,lat,:), obj.mmr(lon,lat,:));
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+                
+            <span class="keyword">end</span>
+            
+        <span class="keyword">end</span>
+        
+        <span class="comment">% ---- Change The Scale Heights ------  </span>
+        <span class="comment">% NOTE - ONLY DESIGNED FOR 2D object </span>
+        
+        <span class="keyword">function</span> obj = setScaleHeights(obj, Hp, H_diff, H_star)
+            
+            test = [size(Hp); size(H_diff); size(H_star)];
+            matrx = [obj.slcPts, obj.altPts];   
+            
+            <span class="keyword">if</span> (test(1,:) ~=  matrx) | (test(2,:) ~=  matrx) | (test(3,:) ~=  matrx)
+                error(<span class="string">"Scale height matrix has wrong size."</span>);
+            <span class="keyword">else</span>                
+                <span class="comment">% Initialize the scale heights</span>
+                obj.Hp = Hp;
+                obj.H_diff = H_diff;
+                obj.H_star = H_star; 
+                
+                <span class="comment">% Calculate Percents Difference from Diffusive Eq.</span>
+                obj.H_percent = ((obj.H_star ./ obj.H_diff) - 1) * 100;
+            <span class="keyword">end</span>  
+           
+            
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the molecular Diffusion Coefficient </span>
+        <span class="keyword">function</span> obj = setD(obj, Di)
+            <span class="keyword">if</span> size(Di) ~= [obj.slcPts, obj.altPts]
+                error(<span class="string">"Diffusion Coefficient Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Di = Di; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the vertical advection term </span>
+        <span class="keyword">function</span> obj = setVertAdvec(obj, Vert_Adv)
+            <span class="keyword">if</span> size(Vert_Adv) ~= [obj.slcPts, obj.altPts]
+                error(<span class="string">"Vertical Advection Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Vert_Adv = Vert_Adv; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+        <span class="comment">% set the horizontal divergence term</span>
+        <span class="keyword">function</span> obj = setHorMassFluxDiv(obj, Hor_MDiv)
+            <span class="keyword">if</span> size(Hor_MDiv) ~= [obj.slcPts, obj.altPts]
+                error(<span class="string">"Horizontal Divergence Error: Wrong Dimensions"</span>);
+            <span class="keyword">else</span>
+               obj.Hor_MDiv = Hor_MDiv; 
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        
+    <span class="keyword">end</span>        
+<span class="keyword">end</span>
+
+
+</pre><h2 id="10">-------------- FUNCTIONS ------------------</h2><h2 id="11">-- Diffusion Coefficient Calculation</h2><pre class="language-matlab">
 <span class="keyword">function</span> [] = DiffCoeff(T, P, N2, O2, O1, He)
     <span class="comment">% set all the molecular diffusion coefficients</span>
     N2.setD( Di_TIEGCM(<span class="string">'N2'</span>, T, P) );      <span class="comment">% [m^2/s]</span>
@@ -399,103 +520,7 @@ D_i = 0;
 <span class="keyword">end</span>
 
 
-</pre><h2 id="15">-- Converting from lev to ilevs</h2><pre class="language-matlab">
-<span class="keyword">function</span> [feat_ilev] = CONVERT2ILEV(feat_lev, slicePts, altPts)
-<span class="comment">% converts TIEGCM matrix on the midpoint levels to matrix on interface</span>
-<span class="comment">% levels</span>
-
-<span class="comment">% feat_lev = matrix containing features on levs with size of [slicePts, altPts]</span>
-<span class="comment">% slicePts can be either number of lat points or lon points. whatever you want</span>
-<span class="comment">% altPts = number of altitude points</span>
-    
-feat_ilev = zeros( size(feat_lev) );
-
-<span class="comment">% you are dealing with a 2D matrix</span>
-<span class="keyword">if</span> length(slicePts) == 1
-<span class="comment">% find average between elements to get on the interfaces</span>
-    <span class="keyword">if</span> slicePts ~= 0
-        <span class="keyword">for</span> alt = 1:altPts
-            <span class="keyword">if</span> alt ~= 1           
-                <span class="keyword">for</span> slc = 1:slicePts
-                    <span class="keyword">if</span> slc ~= 1           
-                        feat_ilev(slc,alt) = 0.5*(feat_lev(slc,alt) + feat_lev(slc-1, alt-1));
-                    <span class="keyword">else</span>       
-                        feat_ilev(slc,alt) = 0.5*(feat_lev(slc,alt) + feat_lev(slc,alt-1));        
-                    <span class="keyword">end</span>
-                <span class="keyword">end</span>
-
-            <span class="keyword">else</span>
-                <span class="keyword">for</span> slc = 1:slicePts
-                    <span class="keyword">if</span> slc ~= 1   
-                        feat_ilev(slc,alt) = 0.5*(feat_lev(slc,alt) + feat_lev(slc-1, alt));
-                    <span class="keyword">else</span>       
-                        feat_ilev(slc,alt) = feat_lev(slc,alt);          
-                    <span class="keyword">end</span>
-                <span class="keyword">end</span>
-            <span class="keyword">end</span>
-        <span class="keyword">end</span>
-
-    <span class="keyword">else</span>    <span class="comment">% only converting an array</span>
-        <span class="keyword">for</span> alt = 1:altPts
-            <span class="keyword">if</span> alt ~= 1           
-                feat_ilev(alt) = 0.5*(feat_lev(alt) + feat_lev(alt-1));
-            <span class="keyword">else</span>
-                feat_ilev(alt) = feat_lev(alt);
-            <span class="keyword">end</span>
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-
-<span class="comment">% you want to put all lat/lon points onto the interfaces (3D matrix)   </span>
-<span class="comment">% i.e. feat_lev = (lon, lat, alt)</span>
-<span class="keyword">else</span>  
-    <span class="keyword">for</span> alt = 1:altPts
-        <span class="keyword">if</span> alt ~= 1 
-            <span class="keyword">for</span> slc2 = 1:slicePts(2)
-                <span class="keyword">for</span> slc1 = 1:slicePts(1)
-                    <span class="keyword">if</span> slc1 ~= 1  &amp;&amp; slc2 ~= 1         
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1-1,slc2-1,alt-1));
-
-                    <span class="keyword">elseif</span> slc1 ~= 1 &amp;&amp; slc2 == 1
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1-1,slc2,alt-1));
-
-                    <span class="keyword">elseif</span> slc1 == 1 &amp;&amp; slc2 ~= 1
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1,slc2-1,alt-1));
-
-                    <span class="keyword">else</span>       
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1,slc2,alt-1));  
-
-                    <span class="keyword">end</span>
-                <span class="keyword">end</span>
-            <span class="keyword">end</span>
-
-        <span class="keyword">else</span>              
-            <span class="keyword">for</span> slc2 = 1:slicePts(2)
-                <span class="keyword">for</span> slc1 = 1:slicePts(1)
-                    <span class="keyword">if</span> slc1 ~= 1 &amp;&amp; slc2 ~= 1
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1-1,slc2-1,alt));
-
-                    <span class="keyword">elseif</span> slc1 ~= 1 &amp;&amp; slc2 == 1
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1-1,slc2,alt));
-
-                    <span class="keyword">elseif</span> slc1 == 1 &amp;&amp; slc2 ~= 1
-                        feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1,slc2-1,alt));
-
-                    <span class="keyword">else</span>      
-                        feat_ilev(slc1,slc2,alt) = feat_lev(slc1,slc2,alt);
-
-                    <span class="keyword">end</span>
-                <span class="keyword">end</span>
-            <span class="keyword">end</span>
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>    
-<span class="keyword">end</span>
-    
-<span class="keyword">end</span>
-
-
-
-
-</pre><p>Hannah Holt CU BOULDER Aerospace Engineering Sciences. Thank you.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+</pre><h2 id="15">-- Converting from lev to ilevs</h2><pre class="error">File '~/Documents/MATLAB/ASEN5307/Utilities/CONVERT2ILEV.m' not found.</pre><p>Hannah Holt CU BOULDER Aerospace Engineering Sciences. Thank you.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% TIEGCM Continuity and Momentum Equation Analysis Program
 % The programs and functions used to evaluate the different terms in the momentum equation for the thermosphere. Written by Hannah Holt. Last Updated 9/4/2019
@@ -504,7 +529,7 @@ feat_ilev = zeros( size(feat_lev) );
 %% Define Program Characteristics
 close all;
 
-output = '~/Documents/MATLAB/TIEGCM/TIEGCM_output/';
+output = '~/TIEGCM/TIEGCM_files/';
 FigFolder = './Figures/';
 addpath(output, FigFolder);
 
@@ -512,6 +537,7 @@ addpath(output, FigFolder);
 ut_want = 1;        % what time segment desired from simulation
 feat = 1;           % Select latitude and longitude desired
 pdrag = 1;          % 1 if pdrag file used, 0 if not
+res = 2.5;
 
 % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- Global Features REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
 if feat == 1
@@ -565,8 +591,8 @@ wn = ncread(filename,'WN')/100;         % neutral vertical winds on ilev [m/s]
 Z = repmat(z_ilev', size(den,1), 1 );   
 
 P = p0 .* exp(-Z);                      % pressure array on ilevs [Pa]
-altPts = size(z_ilev);
-lonPts = size(lon);
+altPts = length(z_ilev);
+lonPts = length(lon);
 
 he = ncread(filename,'HE');             % Units of mass mixing ratio
 n2 = ncread(filename,'N2');
@@ -625,11 +651,15 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 
 
 %% Plot Total Gas Features
+x_label = 'Longitude';
 saveFig = '0';
-PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
+
 
 %% Plot Specific Species Behavior
-PLOT_Species(zp, z_ilev, lon, lon_want, lat_want, omega, plotname, savename, He)
+% saveFig = savename;
+saveFig = '0';
+PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, plotname, saveFig, He)
 
 %% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH CLASSES REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
 %% A 'TIEGCMspecies' object

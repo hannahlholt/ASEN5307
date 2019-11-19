@@ -5,7 +5,7 @@
 %% Define Program Characteristics
 close all;
 
-output = '~/Documents/MATLAB/TIEGCM/TIEGCM_output/';
+output = '~/TIEGCM/TIEGCM_files/';
 FigFolder = './Figures/';
 addpath(output, FigFolder);
 
@@ -13,6 +13,7 @@ addpath(output, FigFolder);
 ut_want = 1;        % what time segment desired from simulation
 feat = 1;           % Select latitude and longitude desired
 pdrag = 1;          % 1 if pdrag file used, 0 if not
+res = 2.5;
 
 % ----- Global Features -------
 if feat == 1
@@ -66,8 +67,8 @@ wn = ncread(filename,'WN')/100;         % neutral vertical winds on ilev [m/s]
 Z = repmat(z_ilev', size(den,1), 1 );   
 
 P = p0 .* exp(-Z);                      % pressure array on ilevs [Pa]
-altPts = size(z_ilev);
-lonPts = size(lon);
+altPts = length(z_ilev);
+lonPts = length(lon);
 
 he = ncread(filename,'HE');             % Units of mass mixing ratio
 n2 = ncread(filename,'N2');
@@ -126,11 +127,15 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 
 
 %% Plot Total Gas Features
+x_label = 'Longitude';
 saveFig = '0';
-PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
+
 
 %% Plot Specific Species Behavior
-PLOT_Species(zp, z_ilev, lon, lon_want, lat_want, omega, plotname, savename, He)
+% saveFig = savename;
+saveFig = '0';
+PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, plotname, saveFig, He)
 
 %% -------------- CLASSES ---------------------
 %% A 'TIEGCMspecies' object

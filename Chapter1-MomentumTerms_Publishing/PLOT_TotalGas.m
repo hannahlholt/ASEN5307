@@ -1,4 +1,4 @@
-function [] = PLOT_TotalGas(zp, Z, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+function [] = PLOT_TotalGas(res, x_label, zp, Z, x_slc, xline_want, other_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
 
 % % ###################################################################################
 % % ###################################################################################
@@ -8,7 +8,7 @@ function [] = PLOT_TotalGas(zp, Z, lon, omega, omegaGrad, Tot_Mdiv, lon_want, la
 
 zp = zp/1000;               % we want to plot in km
 y_avg = mean(zp, 1);        % row vector with average of each column.
-x = lon;
+x = x_slc;
 [X, Y] = meshgrid(x, y_avg);        % mesh grid used for every subplot
 
 ytop = y_avg(end-2);                % For N2, do end-5??
@@ -32,12 +32,12 @@ zbot = -ztop;
 colormap(c); 
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(lon_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)   
+plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
 cbar.Label.String = '\omega [1/s]';
-xlabel('Longtitude [Deg]');
+xlabel([x_label, ' [Deg]']);
 ylabel('Geopotential Altitude [km]');
 title('TIEGCM Omega Output (ilev)')
 grid on;
@@ -51,12 +51,12 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(lon_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5) 
+plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
 cbar.Label.String = '\partial \omega / \partial z [1/s]';
-xlabel('Longtitude [Deg]');
+xlabel([x_label, ' [Deg]']);
 ylabel('Geopotential Altitude [km]');
 title('Gradient of Omega (ilev)');
 grid on;
@@ -70,13 +70,13 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(lon_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5) 
+plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
 cbar.Label.String = '\omega - \partial \omega/ \partial z';
 
-xlabel('Longtitude [Deg]');
+xlabel([x_label, ' [Deg]']);
 ylabel('Geopotential Altitude [km]');
 title('\omega - \partial \omega/ \partial z')
 grid on;
@@ -90,29 +90,46 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(lon_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5) 
+plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
 hold on;
-for i =(14:4:55)
-    plot(x, zp(:,i));
-    
+
+switch res
+    case 2.5
+        start = 14;
+        step = 4;           % move by one scale height
+        stop = 55;
+    case 5
+        start = 8;
+        step = 2;
+        stop = 27;
+
+end
+for j =(start:step:stop)
+    plot(x, zp(:,j));
+
     %label the lines
-    xpt = 150;
-    ypt = double(zp(end, i));
-    lbl = ['z = ', num2str(Z(i))];
+    xpt = x_slc(end-3);
+    ypt = double(zp(end, j));
+    lbl = ['z = ', num2str(Z(j))];
     text(xpt, ypt, lbl, 'FontSize', 9, 'BackgroundColor', 'white', 'HorizontalAlignment', 'Center', 'Margin', 0.5)
     hold on;   
 end
+
 hold off;
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
 cbar.Label.String = 'Total Gas Mass Flux Divergence [1/s]';
-xlabel('Longtitude [Deg]');
+xlabel([x_label, ' [Deg]']);
 ylabel('Geopotential Altitude [km]');
 title('Total Mass Flux Divergence (ilev)');
 grid on;
 
-sgtitle(['TIEGCM Model Run at UT = 0, Lat = ', num2str(lat_want), ', ', plotname]);
+if strcmp(x_label,'Latitude')
+    sgtitle(['TIEGCM ', num2str(res) ,'deg Res Model Run at UT = 0, Lon = ', num2str(other_want), ', ', plotname]);
+else
+   sgtitle(['TIEGCM ', num2str(res) ,'deg Res Model Run at UT = 0, Lat = ', num2str(other_want), ', ', plotname]);
+end
 
 if saveFig ~= '0'
     saveas(thisfig, ['./Figures/Total_Gas/TIEGCM_LonMap_', saveFig, '.png'])  

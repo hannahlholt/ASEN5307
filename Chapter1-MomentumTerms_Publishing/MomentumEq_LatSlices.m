@@ -137,8 +137,8 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 % -------------------------------------
 
 %% Plot Total Gas Features
-% saveFig = '0';
-% PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+saveFig = '0';
+PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
 
 
 %% Plot Specific Species Behavior

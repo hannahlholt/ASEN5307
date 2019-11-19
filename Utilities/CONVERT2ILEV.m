@@ -59,9 +59,8 @@ else
                     elseif slc1 == 1 && slc2 ~= 1
                         feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1,slc2-1,alt-1));
 
-                    else       
+                    else 
                         feat_ilev(slc1,slc2,alt) = 0.5*(feat_lev(slc1,slc2,alt) + feat_lev(slc1,slc2,alt-1));  
-
                     end
                 end
             end

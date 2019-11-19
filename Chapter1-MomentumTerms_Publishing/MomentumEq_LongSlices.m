@@ -1,4 +1,3 @@
-
 close all;
 
 TIEGCMoutput = '/home/haho3703/MATLAB/TIEGCM_files/lowF107.lowtohighKp/';
@@ -86,6 +85,7 @@ he2 = squeeze(he(:, :, 22, ut_want+1));     % to plot helium at 400 km
 
 % Condense to UT time and latitude  
 i = find(lat == lat_want);
+% den1 = squeeze(den(:, :, :, ut_want+1));
 
 den = squeeze(den(:, i, :, ut_want+1));        
 n2 = squeeze(n2(:, i , :, ut_want+1));
@@ -137,14 +137,14 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 % -------------------------------------
 
 %% Plot Total Gas Features
-% saveFig = '0';
-% PLOT_TotalGas(zp, z_ilev, lon, omega, omegaGrad, Tot_Mdiv, lon_want, lat_want, plotname, saveFig)
+x_label = 'Longitude';
+saveFig = '0';
+PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
 
 
 %% Plot Specific Species Behavior
 % saveFig = savename;
 saveFig = '0';
-x_label = 'Longitude';
 PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, plotname, saveFig, He)
 
 
