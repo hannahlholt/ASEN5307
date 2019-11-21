@@ -31,6 +31,7 @@ tsplice = [tq; tst];
 name1 = './Figures/Powerspectrum_obs.png';
 name2 = './Figures/Morlet_obs.png';
 name3 = './Figures/MorletPhase_obs.png';
+name4 = './Figures/RecreatedSignal.png';
 xlimits = [0, 1.3];
 
 %% ---- SYNTHETIC DATA----
@@ -61,7 +62,8 @@ xnorm = Px/sum(Px(:));
 % ----- COMPUTE WAVELET TRANSFORM -------------
 [wt, period, coi] = cwt(x, 'amor', days(dt));
 
-Z = abs(wt);
+Z_og = abs(wt);
+Z = Z_og;
 [X,Y] = meshgrid(tsplice, days(period));
 
 % for plotting cone of influence (coi)
@@ -71,18 +73,26 @@ Z(Y > Z1) = NaN;
 % ---- COMPUTE PHASE -------
 % 1) one day oscillation
 n = days(1);
+
+% index in time space (rows) of day oscillation
 [~, idx1] = min(abs(period-n));
 
 
 % 2) half day oscillation
 n = days(0.5);
+% index in time space (rows) of half day oscillation
 [~, idx2] = min(abs(period-n));
 
 phi = 180/pi*(angle(wt));            % phase angle [-180, 180]
 
+% --- RECREATE SIGNAL -----
+x_day = Z_og(idx1,:) .* sin( 2*pi./days(period(idx1)) + pi/180.*phi(idx1,:));
+x_halfday = Z_og(idx2,:) .* sin( 2*pi./days(period(idx2)) + pi/180.*phi(idx2,:));
+
+
 %% ------ PLOTTING -------
 
-% PLOT 1D POWER SPECTRUM
+%% PLOT 1D POWER SPECTRUM
 h0 = figure();
 subplot(211);
 plot(tsplice, x);
@@ -98,7 +108,7 @@ grid on;
 saveas(h0, name1);
 %
 
-% PLOT WAVELET ANALYSIS
+%% PLOT WAVELET ANALYSIS
 h1 = figure();
 contourf(X, Y, Z, 100, 'linecolor', 'none')
 hold on;
@@ -112,9 +122,9 @@ grid on;
 saveas(h1, name2);
 
 
-% PLOT PHASE
+%% PLOT PHASE
 h3 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
-A = 72;
+daystop = 72;
 B = 12;
 UTplt = [UT(1:stop); UT(start:end)];
 
@@ -122,10 +132,10 @@ UTplt = [UT(1:stop); UT(start:end)];
 subplot(211)
 plot(tsplice, phi(idx1,:)); hold on;
 plot(tsplice, zeros(length(tsplice),1), 'k')
-axis([70 A -180 180])
+axis([70 daystop -180 180])
 
 ax = gca;
-ax.XAxis.TickValues = [70:1/B:A];
+ax.XAxis.TickValues = [70:1/B:daystop];
 oldtick = ax.XAxis.TickValues;
 [~, indx] = min(abs(tsplice-oldtick));
 ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
@@ -137,10 +147,10 @@ grid on;
 subplot(212)
 plot(tsplice, phi(idx2,:)); hold on;
 plot(tsplice, zeros(length(tsplice),1), 'k')
-axis([70 A -180 180])
+axis([70 daystop -180 180])
 
 ax = gca;
-ax.XAxis.TickValues = [70:1/B:A];
+ax.XAxis.TickValues = [70:1/B:daystop];
 oldtick = ax.XAxis.TickValues;
 [~, indx] = min(abs(tsplice-oldtick));
 ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
@@ -149,6 +159,47 @@ xlabel('UT')
 ylabel('Phase Angle (deg)')
 grid on;
 saveas(h3, name3);
+
+
+%% PLOT Recreated day and half-day signal
+h4 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
+B = 12;
+UTplt = [UT(1:stop); UT(start:end)];
+
+% -----------------------------------------------
+subplot(211)
+plot(tsplice, x_day, tsplice, x_halfday); hold on;
+plot(tsplice, zeros(length(tsplice),1), 'k')
+legend('x_{day}', 'x_{half day}');
+
+title('Recreated TIEGCM Density Signal');
+xlabel('Model Time [days]')
+ylabel('x(t)')
+grid on;
+% -----------------------------------------------
+% zoomed in
+daystart = 72;
+daystop = 75;
+
+subplot(212)
+plot(tsplice, x_day, tsplice, x_halfday); hold on;
+plot(tsplice, zeros(length(tsplice),1), 'k')
+xlim([daystart daystop])
+legend('x_{day}', 'x_{half day}');
+ax = gca;
+ax.XAxis.TickValues = [70:1/B:daystop];
+oldtick = ax.XAxis.TickValues;
+[~, indx] = min(abs(tsplice-oldtick));
+ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
+title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
+xlabel('UT')
+ylabel('x(t)')
+grid on;
+
+
+ saveas(h4, name4);
+
+
 
 
 
