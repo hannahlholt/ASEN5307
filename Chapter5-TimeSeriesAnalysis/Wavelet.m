@@ -27,6 +27,7 @@ xst_dt = detrend(xst, 3);                  % detrend it
 % now splice together the storm and quiet time
 x = [xq_dt; xst_dt];
 tsplice = [tq; tst];
+UTsplice = [UT(1:stop); UT(start:end)];
 
 name1 = './Figures/Powerspectrum_obs.png';
 name2 = './Figures/Morlet_obs.png';
@@ -90,6 +91,14 @@ x_day = Z_og(idx1,:) .* sin( 2*pi./days(period(idx1)) + pi/180.*phi(idx1,:));
 x_halfday = Z_og(idx2,:) .* sin( 2*pi./days(period(idx2)) + pi/180.*phi(idx2,:));
 
 
+% --- create Phase of the North pole w.r.t noon
+lon_Npole = 190;                %  degrees E  , N pole at 2018??
+dt = lon_Npole/15 - 12;
+phi0 = mod(2*pi*dt/24, 2*pi);
+
+% sine wave of pole w.r.t noon. (MAX when pole is at noon!!)
+x_pole_noon = cos(2*pi/24*UTsplice + phi0); 
+
 %% ------ PLOTTING -------
 
 %% PLOT 1D POWER SPECTRUM
@@ -126,7 +135,6 @@ saveas(h1, name2);
 h3 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
 daystop = 72;
 B = 12;
-UTplt = [UT(1:stop); UT(start:end)];
 
 % -----------------------------------------------
 subplot(211)
@@ -138,7 +146,7 @@ ax = gca;
 ax.XAxis.TickValues = [70:1/B:daystop];
 oldtick = ax.XAxis.TickValues;
 [~, indx] = min(abs(tsplice-oldtick));
-ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
+ax.XTickLabel = num2str([0; UTsplice(indx(2:end))]);
 title('One Day Periodicity');
 xlabel('UT')
 ylabel('Phase Angle (deg)')
@@ -153,7 +161,7 @@ ax = gca;
 ax.XAxis.TickValues = [70:1/B:daystop];
 oldtick = ax.XAxis.TickValues;
 [~, indx] = min(abs(tsplice-oldtick));
-ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
+ax.XTickLabel = num2str([0; UTsplice(indx(2:end))]);
 title('Half Day Periodicity');
 xlabel('UT')
 ylabel('Phase Angle (deg)')
@@ -164,7 +172,6 @@ saveas(h3, name3);
 %% PLOT Recreated day and half-day signal
 h4 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
 B = 12;
-UTplt = [UT(1:stop); UT(start:end)];
 
 % -----------------------------------------------
 subplot(211)
@@ -182,22 +189,34 @@ daystart = 72;
 daystop = 75;
 
 subplot(212)
-plot(tsplice, x_day, tsplice, x_halfday); hold on;
+hold on;
+yyaxis left
+p1 = plot(tsplice, x_day, tsplice, x_halfday);
 plot(tsplice, zeros(length(tsplice),1), 'k')
 xlim([daystart daystop])
-legend('x_{day}', 'x_{half day}');
+
 ax = gca;
 ax.XAxis.TickValues = [70:1/B:daystop];
 oldtick = ax.XAxis.TickValues;
 [~, indx] = min(abs(tsplice-oldtick));
-ax.XTickLabel = num2str([0; UTplt(indx(2:end))]);
-title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
+ax.XTickLabel = num2str([0; UTsplice(indx(2:end))]);
 xlabel('UT')
 ylabel('x(t)')
 grid on;
 
 
+yyaxis right 
+ax = gca;
+ax.YColor = 'k';
+p2 = plot(tsplice, x_pole_noon, 'k');
+ylabel('Phase of N Mag Pole w.r.t noon')
+hold off;
+
+legend([p1; p2], 'x_{day}', 'x_{half day}', 'Phase of N Mag Pole');
+title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
+
  saveas(h4, name4);
+
 
 
 
