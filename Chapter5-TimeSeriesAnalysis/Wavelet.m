@@ -33,6 +33,7 @@ name1 = './Figures/Powerspectrum_obs.png';
 name2 = './Figures/Morlet_obs.png';
 name3 = './Figures/MorletPhase_obs.png';
 name4 = './Figures/RecreatedSignal.png';
+name5 = './Figures/RecreatedSignalZOOM.png';
 xlimits = [0, 1.3];
 
 %% ---- SYNTHETIC DATA----
@@ -174,7 +175,6 @@ h4 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
 B = 12;
 
 % -----------------------------------------------
-subplot(211)
 plot(tsplice, x_day, tsplice, x_halfday); hold on;
 plot(tsplice, zeros(length(tsplice),1), 'k')
 legend('x_{day}', 'x_{half day}');
@@ -183,10 +183,52 @@ title('Recreated TIEGCM Density Signal');
 xlabel('Model Time [days]')
 ylabel('x(t)')
 grid on;
-% -----------------------------------------------
-% zoomed in
+ saveas(h4, name4);
+% -----------------------------------------------'
+
+% zoomed in plots 
+h5 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
+
+% BEFORE STORM
 daystart = 72;
 daystop = 75;
+
+subplot(211)
+hold on;
+yyaxis left
+p1 = plot(tsplice, x_day, tsplice, x_halfday);
+plot(tsplice, zeros(length(tsplice),1), 'k')
+xlim([daystart daystop])
+
+ax = gca;
+ax.XAxis.TickValues = [70:1/B:daystop];
+oldtick = ax.XAxis.TickValues;
+[~, indx] = min(abs(tsplice-oldtick));
+ax.XTickLabel = num2str([0; UTsplice(indx(2:end))]);
+xlabel('UT')
+ylabel('x(t)')
+grid on;
+
+
+yyaxis right 
+ax2 = gca;
+ax2.YColor = 'k';
+ax2.YLim = [-1, 1];
+ax2.YAxis(2).TickValues = linspace(-1,1,9);
+ticks1 = linspace(12, 21, 4);
+ticks2 = linspace(0, 12, 5);
+ax2.YTickLabel = [ticks1, ticks2];
+p2 = plot(tsplice, x_pole_noon, 'k');
+ylabel('Position of N Mag Pole (LT)')
+hold off;
+
+legend([p1; p2], 'x_{day}', 'x_{half day}', 'Phase of N Mag Pole');
+title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
+
+
+% AFTER STORM
+daystart = 87;
+daystop = 90;
 
 subplot(212)
 hold on;
@@ -206,16 +248,21 @@ grid on;
 
 
 yyaxis right 
-ax = gca;
-ax.YColor = 'k';
+ax2 = gca;
+ax2.YColor = 'k';
+ax2.YLim = [-1, 1];
+ax2.YAxis(2).TickValues = linspace(-1,1,9);
+ticks1 = linspace(12, 21, 4);
+ticks2 = linspace(0, 12, 5);
+ax2.YTickLabel = [ticks1, ticks2];
 p2 = plot(tsplice, x_pole_noon, 'k');
-ylabel('Phase of N Mag Pole w.r.t noon')
+ylabel('Position of N Mag Pole (LT)')
 hold off;
 
 legend([p1; p2], 'x_{day}', 'x_{half day}', 'Phase of N Mag Pole');
 title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
 
- saveas(h4, name4);
+ saveas(h5, name5);
 
 
 
