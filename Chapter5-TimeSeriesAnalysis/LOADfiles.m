@@ -129,6 +129,11 @@ end
 %% now create struct and use this in other programs
 t_series = struct('t', mtime_days, 'T', globe_avg(:,1), 'Den', globe_avg(:,2), ...
     'mbar', globe_avg(:,3), 'Zlvl', z_want, 'UT', UT, 'lon', lon, 'lat', lat, 'date', double(modeltime), 'QJoule',  globe_avg(:,4), 'Zp_latlon', Zp);
+
+rptrows = length(t_series.t)/length(t_series.UT);
+rptcols = 1;
+t_series.UT = repmat(t_series.UT, [rptrows, rptcols]);
+
 %%
 clearvars -except t_series
 run startup.m
