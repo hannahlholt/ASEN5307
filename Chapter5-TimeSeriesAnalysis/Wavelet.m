@@ -1,8 +1,43 @@
 % this program tries to understand how wavelets work.
-close all;
-clear all;
+% close all;
+% clear all;
+
+% if the time series doesn't exist, then run the LOADfiles script.
+load t_series.mat
+
+%% CALL IGRF TO GET MAG. FIELD.
+% create datenum for the model times 
+DateNum = datenum(t_series.date(1,:), 1, t_series.date(2,:), t_series.date(3,:), t_series.date(4,:), 0);
+
+Nlon = length(t_series.lon);
+Nlat = length(t_series.lat);
+Ntime = length(DateNum);
+Bx = zeros(Nlat, Nlon);
+By = Bx; Bz = Bx;
+
+% Find Magnetic Field Coords for every lat/lon (just do for first time)
+for t = 1:1
+    for i = 1:Nlat
+        for j = 1:Nlon
+            [Bx(i,j), By(i,j), Bz(i,j)] = igrf(DateNum(t), t_series.lat(i), t_series.lon(j), t_series.Zp_latlon(j,i)./1000);
+        end
+    end   
+end
+
+%%
+I = atand(Bz./hypot(Bx, By));  % inclination of field [deg]
+
+[latSP_ind, lonSP_ind] = find( I == min(I(:)) );    % lat and lon indx of South mag pole (-90 inc)
+[latNP_ind, lonNP_ind] = find( I == max(I(:)) );    % lat and lon indx of North mag pole (+90 inc)
+
+t_series.lat(latSP_ind)
+t_series.lat(latNP_ind)
+
+
+
 
 %%  ---- REAL DATA ----
+% TIEGCM is from year 2003.
 T = readtable('t_series_data.csv');
 
 x_tot = T{:,2};
@@ -123,7 +158,7 @@ saveas(h1, name2);
 
 
 %% PLOT PHASE
-h3 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
+h3 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'off');
 daystop = 72;
 B = 12;
 UTplt = [UT(1:stop); UT(start:end)];
