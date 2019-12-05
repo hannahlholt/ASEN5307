@@ -2,10 +2,14 @@
 close all;
 % clear all;
 
+addpath(genpath('~/Documents/MATLAB/ASEN5307/Utilities'))
 var = 'Density';
 
-% if the time series doesn't exist, then run the LOADfiles script.
-load t_series.mat
+try 
+    load t_series.mat
+catch
+    LOADfiles
+end
 
 %% CALL IGRF TO GET MAG. FIELD.
 % create datenum for the model times 
@@ -341,7 +345,7 @@ p2 = plot(tsplice, N_pole_noon, 'k', tsplice, S_pole_noon, 'k');
 ylabel('Position of N/S Mag Pole (LT)')
 hold off;
 
-legend([p1; p2], 'x_{day}', 'x_{half day}', 'Phase of N Mag Pole');
+legend([p1; p2], 'x_{day}', 'x_{half day}', 'Phase of N Mag Pole', 'Phase of S Mag Pole');
 title({['Recreated TIEGCM Signal ZOOMED']; ['Model Day ', num2str(daystart), ' to ', num2str(daystop)]});
 
  saveas(h5, name5);
