@@ -12,6 +12,7 @@ filenames = dir([output, runtype, '*.nc']);
 %%
 % since this is the 5 deg res, lon pts = 72, lat pts = 36, and Z = 29
 % den(lon, lat, Z, time) = (72, 36, 29, 72)
+year = 2003;
 modeltime = [];
 Kp = [];
 den = [];
@@ -20,13 +21,15 @@ n2 = [];
 o2 = [];
 o1 = [];
 he = [];
+zp = [];
+QJoule = [];
 
 for i=1:length(filenames)
     name = [output, runtype, filenames(i).name];
     
     fprintf(['Loading File: ', name, '\n\n']);
 
-    modeltime = [modeltime, ncread(name,'mtime')];  % (day, hr, min)
+    modeltime = [modeltime, ncread(name,'mtime')];  % (doy, hr, min)
     Kp = [Kp; ncread(name, 'Kp')];                  % Kp index
     
     den = cat(4, den, ncread(name,'DEN')/1e3);       % total density [kg/m^3], ILEV
@@ -34,11 +37,13 @@ for i=1:length(filenames)
     n2 = cat(4, n2, ncread(name, 'N2'));             % N2 mmr, LEV
     o2 = cat(4, o2, ncread(name, 'O2'));              
     o1 = cat(4, o1, ncread(name, 'O1'));              
-    he = cat(4, he, ncread(name, 'HE'));             
+    he = cat(4, he, ncread(name, 'HE'));
+    zp = cat(4, zp, ncread(name, 'Z')/100);             % geopotential height [m] on ilev
+    QJoule = cat(4, QJoule, ncread(name, 'QJOULE'));    % Joule heating [W/m^2]
     
     % These dont change for the runs
     if i == 1
-        Z = ncread(name, 'ilev');           % interface pressure level
+        Z = ncread(name, 'ilev');           % interface pressure level        
         UT = ncread(name, 'ut');            % UT time from model time hr and minute [hrs]  
         lat = ncread(name, 'lat');
         lon = ncread(name, 'lon');
@@ -46,7 +51,8 @@ for i=1:length(filenames)
         g0 = ncread(name, 'grav') / 100;    % const. gravitational acceleration [m/s]
     end
 end
- 
+%%
+modeltime = [year*ones(1,length(modeltime)); modeltime]; % add year to modeltime
 P = p0 .* exp(-Z);                      % pressure array on ilevs [Pa]
 
 %% condense density to specific pressure level
@@ -60,7 +66,7 @@ Z_mat = permute(Z_mat, [2 3 1]);
 step = 1;
 % [Temp, den, mbar] in each column for every time step
 globe_avg = zeros(length(modeltime)/step, 3);
-mtime = zeros(length(modeltime)/step, 1);            % model time [day] for every global average point
+mtime_days = zeros(length(modeltime)/step, 1);            % model time [day] for every global average point
 
 ind = 1;
 tot_t_ind = length(modeltime);
@@ -73,7 +79,8 @@ for t_ind = [1:step:tot_t_ind]
     fprintf(['Condensing to global average time series.\nCurrent time index: ', ...
         num2str(t_ind), ' out of ', num2str(tot_t_ind) ,'. \n\n']);
     
-    denx = squeeze(den(:, :, :, t_ind));        
+    denx = squeeze(den(:, :, :, t_ind));  
+    qjoulex = squeeze(QJoule(:, :, :, t_ind));  
     n2x = squeeze(n2(:, : , :, t_ind));
     o2x = squeeze(o2(:, :, :, t_ind));
     o1x = squeeze(o1(:, :, :, t_ind));
@@ -97,26 +104,32 @@ for t_ind = [1:step:tot_t_ind]
 
     % now find global mean of Temperature, mbar and den at ~ 400 km
     % have to scale by the area (i.e. cos(latitude))
-    for i=1:3
+    for i=1:4
        if i == 1
            arr = squeeze(Tnx(:,:,z_want));
        elseif i == 2
            arr = squeeze(denx(:,:,z_want));
-       else
+       elseif i == 3
            arr = squeeze(mbarx(:,:,z_want));
+       else
+           arr = squeeze(qjoulex(:,:,z_want));
        end
         % take mean over lon and lat (i.e. rows and cols)
         globe_avg(ind,i) = GlobeAreaAvg(arr, lon, lat);
     end
+    % calculate geopotential height at pressure level for all lat and lon
+    Zp = squeeze(zp(:,:,z_want,t_ind));
     
-    mtime(ind) = double(modeltime(1,t_ind))+double(modeltime(2,t_ind))/24+double(modeltime(3,t_ind))/1440;
+    % model time in days
+    mtime_days(ind) = double(modeltime(2,t_ind))+double(modeltime(3,t_ind))/24+double(modeltime(4,t_ind))/1440;
     ind = ind+1;
    
 end
 
 %% now create struct and use this in other programs
-t_series = struct('t', mtime, 'T', globe_avg(:,1), 'Den', globe_avg(:,2), ...
-    'mbar', globe_avg(:,3), 'Zlvl', z_want, 'UT', UT, 'lon', lon);
+t_series = struct('t', mtime_days, 'T', globe_avg(:,1), 'Den', globe_avg(:,2), ...
+    'mbar', globe_avg(:,3), 'Zlvl', z_want, 'UT', UT, 'lon', lon, 'lat', lat, 'date', double(modeltime), 'QJoule',  globe_avg(:,4), 'Zp_latlon', Zp);
 %%
 clearvars -except t_series
 run startup.m
+save t_series
