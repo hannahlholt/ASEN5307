@@ -2,8 +2,8 @@
 close all;
 % clear all;
 
-addpath(genpath('~/Documents/MATLAB/ASEN5307/Utilities'))
-var = 'Density';
+addpath(genpath('~/MATLAB/ASEN5307/Utilities'))
+var = 'Joule Heating';
 
 try 
     load t_series.mat
