@@ -1,3 +1,4 @@
+
 close all;
 
 TIEGCMoutput = '/home/haho3703/MATLAB/TIEGCM_files/lowF107.lowtohighKp/';
@@ -131,7 +132,7 @@ end
 % Vertical Advection Terms and assign to Objects
 VertAdvection(omega, Z, p0, g0, N2, O2, O1, He)
 
-% Horizontal Mass Flux Divergence Terms for objecta and total gas 
+% Horizontal Mass Flux Divergence Terms for species and total gas 
 Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);       
 
 % -------------------------------------

@@ -3,13 +3,14 @@ close all;
 % clear all;
 
 addpath(genpath('~/MATLAB/ASEN5307/Utilities'))
-var = 'Joule Heating';
+var = 'Density';
 
 try 
     load t_series.mat
 catch
     LOADfiles
 end
+addpath(genpath('~/Documents/MATLAB/ASEN5307/Utilities'));
 
 %% CALL IGRF TO GET MAG. FIELD.
 % create datenum for the model times 
@@ -60,8 +61,8 @@ end
 
 t = DAT.t;
 UT = DAT.UT;            % universal time
-dtN = t(2) - t(1);   % dt is in hours
-fs = 1/dtN;
+dt = t(2) - t(1);       % dt is in days
+fs = 1/dt;
 xname = '(days)';
 
 % quiet time
@@ -115,7 +116,7 @@ nfft = 2^nextpow2(length(x));     % next power of 2 to use for fft points
 xnorm = Px/sum(Px(:));
  
 % ----- COMPUTE WAVELET TRANSFORM -------------
-[wt, period, coi] = cwt(x, 'amor', days(dtN));
+[wt, period, coi] = cwt(x, 'amor', days(dt), 'VoicesPerOctave', 48);
 
 Z_og = abs(wt);
 Z = Z_og;
@@ -130,24 +131,26 @@ Z(Y > Z1) = NaN;
 n = days(1);
 
 % index in time space (rows) of day oscillation
-dT = 3;
+dT = 5;
 [~, idx1] = min(abs(period-n));
-% [~, trueMAXind] = max(Z_og(idx1-dT:idx1+dT,1));
-% idx1 = idx1 + (-dT + trueMAXind);
-idx1 = idx1 - 3;
+[~, trueMAXind] = max(Z_og(idx1-dT:idx1+dT,1));
+idx1 = idx1 + (-dT + trueMAXind);
 
 % 2) half day oscillation
 n = days(0.5);
+
 % index in time space (rows) of half day oscillation
 [~, idx2] = min(abs(period-n));
+[~, trueMAXind] = max(Z_og(idx2-dT:idx2+dT,1));
+idx2 = idx2 + (-dT + trueMAXind);
 idx2 = idx2 - 2;
 
-phi = 180/pi*(angle(wt));            % phase angle [-180, 180]
+phi = angle(wt);            % phase angle [-pi, pi]
 
 % --- RECREATE SIGNAL -----
-
-x_day = Z_og(idx1,:) .* sin( 2*pi./days(period(idx1)) + pi/180.*phi(idx1,:));
-x_halfday = Z_og(idx2,:) .* sin( 2*pi./days(period(idx2)) + pi/180.*phi(idx2,:));
+% WHY DOES THIS WORK??????????????
+x_day = Z_og(idx1,:) .* sin( 2*pi./days( period(idx1) ) + pi/3  - phi(idx1,:));
+x_halfday = Z_og(idx2,:) .* sin( 2*pi./days( period(idx2) ) + 2*pi/3 - phi(idx2,:));
 
 % --- create Phase of the North pole w.r.t noon
 lon_Npole = mod(Bnorth(2), 360);                %  degrees E, N pole at 2003
@@ -165,13 +168,38 @@ phiS = mod(2*pi*dtS/24, 2*pi);
 % sine wave of S pole w.r.t noon. (MAX when pole is at noon!!)
 S_pole_noon = cos(2*pi/24*UTsplice + phiS); 
 
+%% ------- COMPUTE SUNLIT POLE AREA SIGNAL ----------
+Re = 6356.7523;     % radius of Earth at poles [km]
+r = Re*sind(90-abs([Bnorth(1), Bsouth(1)]));        % radius from center of Earth rot axis to N/S pole  [km]
+
+Omega = 2*pi;       % angular velocity of Earth rotation [rads/day];
+dphi = Omega*dt;    % angle swept out by N,S pole every time step [rad] 
+LT = mod([lon_Npole, lon_Spole]/15 + UT, 24);  % Local Time of poles
+SZA = mod(LT * (360/24) - 180, 360);           % Solar Zenith Angle - position of poles w.r.t NOON [deg]
+ds = r.*dphi.*cosd(SZA);        % arc swept out by N/S pole over dt, weighted by SZA [km]
+
+ds_lit = NaN(length(ds), 1);
+for i = 1:length(ds)
+    if ds(i,1) >= 0 && ds(i,2) >= 0
+        ds_lit(i) = ds(i,1) + ds(i,2);
+        
+    elseif ds(i,1) >= 0
+        ds_lit(i) = ds(i,1);
+        
+    elseif ds(i,2) >= 0
+        ds_lit(i) = ds(i,2);
+        
+    end       
+end
 
 %% ------ PLOTTING -------
-h0 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'off');
+
+%% PLOT SYNTHETIC VERSUS TIEGCM TIME SERIES
+h0 = figure('units', 'normalized', 'position', [0 .5 1 1], 'visible', 'on');
 subplot(211)
 plot(tsplice, x)
 hold on
-plot(tsplice, x_day + x_halfday)
+plot(tsplice, x_day +  x_halfday)
 xlim([70, 80])
 legend('TIEGCM', 'Synthetic')
 title([var, ' Oscilations Before Storm'])
@@ -186,6 +214,36 @@ legend('TIEGCM', 'Synthetic')
 title([var, ' Oscilations After Storm'])
 grid on;
 saveas(h0, name0);
+
+
+%% PLOT SUNLIT SECTION OF POLE
+figure('units', 'normalized', 'position', [0 .5 1 1])
+subplot(211)
+yyaxis left
+semilogy(t, ds_lit);
+ylabel('Sunlit Section [km]');
+ylim([0 5E2])
+yyaxis right 
+plot(tsplice, x)
+xlim([70, 80]);
+legend('Sunlit Area', var)
+title('Oscilations Before Storm')
+grid on;
+
+subplot(212)
+yyaxis left
+semilogy(t, ds_lit);
+ylabel('Sunlit Section [km]');
+ylim([0 5E2])
+yyaxis right 
+plot(tsplice, x)
+xlim([82, 100]);
+legend('Sunlit Area', var)
+title('Oscilations After Storm')
+grid on;
+
+
+
 
 
 %% PLOT 1D POWER SPECTRUM
