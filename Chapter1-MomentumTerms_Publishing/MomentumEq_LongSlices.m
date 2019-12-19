@@ -119,7 +119,7 @@ He = TIEGCMspecies('He', 4, he, den, Z);
 DiffCoeff(Tn, P, N2, O2, O1, He)
 
 % Thermal diffusion coefficient
-D_Ti = -0.36 * He.Di; 
+D_Ti = -0.38 * He.Di; 
 
 % ---------- Calculations --------------
 
@@ -156,6 +156,7 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 saveFig = savename;
 factor = -P/g0; 
 PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, factor, omega, omegaGrad, plotname, saveFig, He)
+
 
 
 %% Plot Helium behavior at 400 km

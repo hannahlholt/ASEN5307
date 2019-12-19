@@ -2,8 +2,9 @@
 close all;
 % clear all;
 
-addpath(genpath('~/MATLAB/ASEN5307/Utilities'))
 var = 'Density';
+var = 'Joule Heating';
+
 
 try 
     load t_series.mat
@@ -143,14 +144,21 @@ n = days(0.5);
 [~, idx2] = min(abs(period-n));
 [~, trueMAXind] = max(Z_og(idx2-dT:idx2+dT,1));
 idx2 = idx2 + (-dT + trueMAXind);
-idx2 = idx2 - 2;
 
 phi = angle(wt);            % phase angle [-pi, pi]
 
 % --- RECREATE SIGNAL -----
 % WHY DOES THIS WORK??????????????
-x_day = Z_og(idx1,:) .* sin( 2*pi./days( period(idx1) ) + pi/3  - phi(idx1,:));
-x_halfday = Z_og(idx2,:) .* sin( 2*pi./days( period(idx2) ) + 2*pi/3 - phi(idx2,:));
+
+n = [1:1:length(tsplice)];
+
+% x_day = Z_og(idx1,:) .* sin( 2*pi./days( period(idx1) ) + pi/3  - phi(idx1,:));
+% x_halfday = Z_og(idx2,:) .* sin( 2*pi./days( period(idx2) ) + 2*pi/3 - phi(idx2,:));
+
+
+x_day = Z_og(idx1,:) .* exp(-1i*phi(idx1,:));
+x_halfday = Z_og(idx2,:) .* exp(-1i*phi(idx2,:));
+
 
 % --- create Phase of the North pole w.r.t noon
 lon_Npole = mod(Bnorth(2), 360);                %  degrees E, N pole at 2003
@@ -263,7 +271,7 @@ saveas(h1, name1);
 %
 
 %% PLOT WAVELET ANALYSIS
-h2 = figure('visible', 'off');
+h2 = figure('visible', 'on');
 contourf(X, Y, Z, 100, 'linecolor', 'none')
 hold on;
 colormap jet;
