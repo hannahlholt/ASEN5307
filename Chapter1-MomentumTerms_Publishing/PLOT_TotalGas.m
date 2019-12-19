@@ -32,7 +32,8 @@ zbot = -ztop;
 colormap(c); 
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
+plot(xline_want(1)*ones(length(y_avg), 1), y_avg, 'r--', 'Linewidth', 2.5);
+plot(xline_want(2)*ones(length(y_avg), 1), y_avg, 'b--', 'Linewidth', 2.5);
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
@@ -51,7 +52,8 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
+plot(xline_want(1)*ones(length(y_avg), 1), y_avg, 'r--', 'Linewidth', 2.5);
+plot(xline_want(2)*ones(length(y_avg), 1), y_avg, 'b--', 'Linewidth', 2.5); 
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
@@ -70,7 +72,8 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
+plot(xline_want(1)*ones(length(y_avg), 1), y_avg, 'r--', 'Linewidth', 2.5);
+plot(xline_want(2)*ones(length(y_avg), 1), y_avg, 'b--', 'Linewidth', 2.5);  
 cbar = colorbar();
 caxis([zbot ztop]); 
 ylim([ybot ytop]);
@@ -90,7 +93,8 @@ zbot = -ztop;
 colormap(c);
 contourf(X, Y, Q, num_cont, 'linecolor', 'none')
 hold on;   
-plot(xline_want*ones(length(y_avg), 1), y_avg, 'k--', 'Linewidth', 2.5)  
+plot(xline_want(1)*ones(length(y_avg), 1), y_avg, 'r--', 'Linewidth', 2.5);
+plot(xline_want(2)*ones(length(y_avg), 1), y_avg, 'b--', 'Linewidth', 2.5);  
 hold on;
 
 switch res

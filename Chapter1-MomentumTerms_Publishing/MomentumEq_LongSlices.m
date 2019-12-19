@@ -1,19 +1,29 @@
 
 close all;
 
-TIEGCMoutput = '/home/haho3703/MATLAB/TIEGCM_files/lowF107.lowtohighKp/';
+
+TIEGCMoutput = '/home/haho3703/MATLAB/TIEGCM_files/';
 UtilitiesFolder = '/home/haho3703/MATLAB/ASEN5307/Utilities';
 FigFolder = './Figures/';
 addpath(TIEGCMoutput, FigFolder, UtilitiesFolder);
+run startup.m
 
 %----------------
-ut_want = 0;        % what time segment desired from simulation
-feat = 5;           % Select latitude and longitude desired
-pdrag = 2;          % 1 if pdrag file used, 0 if not, 2 = special case
+ut_want = 1;        % what time segment desired from simulation
+feat = 7;           % Select latitude and longitude desired
+pdrag = 1;          % 1 if pdrag file used, 0 if not, 2 = special case
 day_want = 81;      % storm hits on day 80 at 00:00 hrs
-res = 5;            % simulation resolution
+res = 2.5;          % simulation resolution
 
 % ----- Global Features -------
+% for paper
+if feat == 7
+    lon_want = [90, -72.5];     % two points for paper -[MAX, MIN] latitude is in between south max and min
+    lat_want = -53.75; 
+    savename = 'S_He_Extrema';
+    plotname = 'HELIUM EXTREMA AT 400 KM';
+end
+
 if feat == 1
 lon_want = 95;          % North nighttime maximum feature
 lat_want = 61.25;
@@ -21,7 +31,7 @@ savename = 'N_He_max';
 plotname = 'HELIUM ENHANCEMENT AT 400 KM';
 end
 if feat == 2 
-lon_want = 85;          % South nighttime maximum feature
+lon_want = 100;          % South nighttime maximum feature
 lat_want = -58.75;
 savename = 'S_He_max';
 plotname = 'HELIUM ENHANCEMENT AT 400 KM';
@@ -56,7 +66,7 @@ if pdrag == 0
     id = 'no Ion Drag';
 end
 if pdrag == 2
-    filename = [TIEGCMoutput, 's0', num2str(day_want),'.nc'];
+    filename = [TIEGCMoutput, 'lowF107.lowtohighKp/s0', num2str(day_want),'.nc'];
 end
 % ----------- Parse Data from file -------------- 
 den = ncread(filename,'DEN') / 1e3;     % total density [kg/m^3] ILEV
@@ -86,7 +96,6 @@ he2 = squeeze(he(:, :, 22, ut_want+1));     % to plot helium at 400 km
 
 % Condense to UT time and latitude  
 i = find(lat == lat_want);
-% den1 = squeeze(den(:, :, :, ut_want+1));
 
 den = squeeze(den(:, i, :, ut_want+1));        
 n2 = squeeze(n2(:, i , :, ut_want+1));
@@ -123,7 +132,7 @@ mbar = (N2.mmr/N2.weight + O2.mmr/O2.weight + O1.mmr/O1.weight + He.mmr/He.weigh
 % omega "winds" and needed gradients
 omega = wn./H_P;                   % TIEGCM omega for every lon/alt [1/s]
 omegaGrad = zeros(size(omega));    % gradient of omega w.r.t Z
-omegaExpGrad = omegaGrad;          % gradient of omega * exp(-Z) w.r.t Z
+omegaExpGrad = omegaGrad;          % gradient of (omega * exp(-Z)) w.r.t Z
 for l = 1:lonPts
    omegaGrad(l,:) = ThreePtGrad( Z(l,:), omega(l,:) );
    omegaExpGrad(l,:) = ThreePtGrad( Z(l,:), exp(-Z(l,:)) .* omega(l,:) );
@@ -138,15 +147,15 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 % -------------------------------------
 
 %% Plot Total Gas Features
-x_label = 'Longitude';
-saveFig = '0';
-PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
+% x_label = 'Longitude';
+% saveFig = '0';
+% PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
 
 
 %% Plot Specific Species Behavior
-% saveFig = savename;
-saveFig = '0';
-PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, plotname, saveFig, He)
+saveFig = savename;
+factor = -P/g0; 
+PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, factor, omega, omegaGrad, plotname, saveFig, He)
 
 
 %% Plot Helium behavior at 400 km
@@ -156,10 +165,6 @@ x = lon;
 [X, Y] = meshgrid(x, y);        % mesh grid used for every subplot
 Z = he2';
 
-% make sure the lat and lon max is correct!
-% [lon_max, lat_max] = find(he2 == max(he2, [], 'all'))
-% lon(lon_max)
-% lat(lat_max)
 mag_eq = importdata('Magnetic_equator_lat_lon.txt'); % first column is lon, second column is lat
 
 figure();
@@ -177,5 +182,11 @@ ylabel('Lat [Deg]')
 xticks(linspace(-180, 180, 9))
 xticklabels({'12', '15', '18', '21', '0', '3', '6', '9', '12'})
 
+%% Extras 
+
+% make sure the lat and lon max is correct!
+[lon_max, lat_max] = find(he2 == max(he2(:,15), [], 'all'))
+lon(lon_max)
+lat(lat_max)
 
 
