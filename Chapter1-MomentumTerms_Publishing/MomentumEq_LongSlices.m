@@ -157,7 +157,7 @@ x_label = 'Longitude';
 %% 2 - Plot Specific Species Behavior
 close all;
 saveFig = savename;
-factor = -P/g0; 
+factor = P/g0; 
 PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, factor, omega, omegaGrad, plotname, saveFig, He)
 
 %% 3 - Plot MMRs of N2, O2, O, and He
@@ -172,7 +172,7 @@ plot(O1.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
 hold on
 plot(He.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
 
-legend('N2','O2','O1','He', 'location', 'Northwest');
+legend('N_2','O_2','O','He', 'location', 'Northwest');
 title(['TIEGCM Mass Mixing Ratios for Lat = ', num2str(lat_want) , ', Lon = ', num2str(lon_want(1))]);
 ylim([120 550]);
 set(gca, 'XScale', 'log');

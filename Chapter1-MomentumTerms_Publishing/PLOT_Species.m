@@ -5,10 +5,7 @@ function [] = PLOT_Species(res, x_label, zp, z, x_slc, xline_want, other_want, f
 
 
 % THIS HAS BEEN UPDATED TO DEAL WITH BOTH latitude and longitude slices!!
-str1 = '$$ \alpha \: \psi_{He} \nabla_h \bullet \vec{V}_h  [kg m/s]$$';
-str2 = '$$ \alpha \omega \frac{\partial \psi_{He}}{\partial Z} [kg m/s]$$';
-str3 = '$$ - \alpha \psi_{He} \omega $$';
-str4 = '$$ \alpha \psi_{He} \frac{\partial \omega}{\partial Z} $$';
+str1 = '[kg / (m^2 s)]';
 
 
 % Find average geopotential altitude for plotting
@@ -16,7 +13,6 @@ zp = zp./1000;               % plot in km
 zp_avg = mean(zp, 1);        % row vector with average of each column.
 x = x_slc;
 x_ind = [find(x_slc == xline_want(1)), find(x_slc == xline_want(2)) ];    % find indices for lat or lon dotted line
-% [X, Y] = meshgrid(x, zp_avg);     % mesh grid used for every subplot
 [X, Y] = meshgrid(x, z);         % mesh grid for plotting on pressure lvls
 
 zp_top = zp_avg(end-2);                % For N2, do end-5??
@@ -54,7 +50,6 @@ for i = 1:length(varargin)
     cbar = colorbar();
     caxis([Qbot Qtop]); 
     ylim([z_bot z_top]);
-    cbar.Label.Interpreter = 'latex';
     cbar.Label.String = str1; 
     xlabel([x_label, ' [Deg]']);
     ylabel('Pressure Level');
@@ -66,16 +61,14 @@ for i = 1:length(varargin)
     [ind, ~] = find(z == Ticks);
     ax.YTick = linspace(0, 1, length(Ticks));
     ax.YAxis(2).TickLabels = round(zp_avg(ind));
-    ylabel('~Z_p [km]')
-    title([Obj.name, ' Mass Flux Divergence']);
+    ylabel('Approx Geopotential Alt [km]')
+    title([Obj.name, ' Mass Flux Convergence']);
     grid on;
     
 % VERTICAL ADVECTION
 % ---------------------------------------------------------------------
     subplot(222)
     Q2 = Obj.Vert_Adv(:,logic)';     % postive divergence = negative sign         
-    Qtop = max(abs(Q2(:)));   
-    Qbot = -Qtop;
 
     colormap(c);
     contourf(X, Y, Q2, num_cont, 'linecolor', 'none')
@@ -87,8 +80,7 @@ for i = 1:length(varargin)
     cbar = colorbar();
     caxis([Qbot Qtop]); 
     ylim([z_bot z_top]);
-    cbar.Label.Interpreter = 'latex';
-    cbar.Label.String = str2;
+    cbar.Label.String = str1;
     xlabel([x_label, ' [Deg]']);
     ylabel('Pressure Level');
     
@@ -99,7 +91,7 @@ for i = 1:length(varargin)
     [ind, ~] = find(z == Ticks);
     ax.YTick = linspace(0, 1, length(Ticks));
     ax.YAxis(2).TickLabels = round(zp_avg(ind));
-    ylabel('~Z_p [km]')
+    ylabel('Approx Geopotential Alt [km]')
     
     title('Vertical Advection');
     grid on;
@@ -108,10 +100,8 @@ for i = 1:length(varargin)
 % -FACTOR * HE MMR * OMEGA 
 % ---------------------------------------------------------------------
     subplot(223)
-    Q3 = -factor .* Obj.mmr .* omega;   
+    Q3 = factor .* Obj.mmr .* omega;   
     Q3 = Q3(:, logic)';
-    Qtop = max(abs(Q3(:)));   
-    Qbot = -Qtop;
 
     colormap(c);
     contourf(X, Y, Q3, num_cont, 'linecolor', 'none')
@@ -123,8 +113,7 @@ for i = 1:length(varargin)
     cbar = colorbar();
     caxis([Qbot Qtop]); 
     ylim([z_bot z_top]);
-    cbar.Label.Interpreter = 'latex';
-    cbar.Label.String = str3;
+    cbar.Label.String = str1;
     xlabel([x_label, ' [Deg]']);
     ylabel('Pressure Level');
     
@@ -135,7 +124,7 @@ for i = 1:length(varargin)
     [ind, ~] = find(z == Ticks);
     ax.YTick = linspace(0, 1, length(Ticks));
     ax.YAxis(2).TickLabels = round(zp_avg(ind));
-    ylabel('~Z_p [km]');
+    ylabel('Approx Geopotential Alt [km]');
     
     title('Vertical Omega Term');
     grid on;
@@ -143,10 +132,8 @@ for i = 1:length(varargin)
 % FACTOR * HE MMR * GRAD(OMEGA)
 % ---------------------------------------------------------------------
     subplot(224)
-    Q4 = factor.* Obj.mmr .* omegaGrad; 
+    Q4 = -factor.* Obj.mmr .* omegaGrad; 
     Q4 = Q4(:, logic)';
-    Qtop = max(abs(Q4(:)));   
-    Qbot = -Qtop;
 
     colormap(c);
     contourf(X, Y, Q4, num_cont, 'linecolor', 'none')
@@ -158,8 +145,7 @@ for i = 1:length(varargin)
     cbar = colorbar();
     caxis([Qbot Qtop]); 
     ylim([z_bot z_top]);
-    cbar.Label.Interpreter = 'latex';
-    cbar.Label.String = str4;
+    cbar.Label.String = str1;
     xlabel([x_label, ' [Deg]']);
     ylabel('Pressure Level');
     
@@ -170,7 +156,7 @@ for i = 1:length(varargin)
     [ind, ~] = find(z == Ticks);
     ax.YTick = linspace(0, 1, length(Ticks));
     ax.YAxis(2).TickLabels = round(zp_avg(ind));
-    ylabel('~Z_p [km]')
+    ylabel('Approx Geopotential Alt [km]')
     title('Vertical Omega Gradient Term');
     grid on;
     
@@ -213,10 +199,11 @@ for i = 1:length(varargin)
     [ind, ~] = find(z == Ticks);
     ax.YTick = linspace(0, 1, length(Ticks));
     ax.YAxis(2).TickLabels = round(zp_avg(ind));
-    ylabel('~Z_p [km]')
+    ylabel('Approx Geopotential Alt [km]')
     
     title([Obj.name, ' Scale Height Difference from Diffusive Eq., UT = 0, Lat = ', num2str(other_want)]);
     grid on;
+    hold off;
     
    
     %% PLOT VERTICAL STRUCTURE OF DIVERGENCE AND ADVECTION
@@ -238,10 +225,10 @@ for i = 1:length(varargin)
         
         p1 = plot(Q1(:,x_ind(j)), zp(x_ind(j),logic)', 'Linewidth', 2.5);
         p2 = plot(Q2(:,x_ind(j)), zp(x_ind(j),logic)', 'Linewidth', 2.5);
-        legend([p1 p2], 'Hor. Divergence', 'Vert. Advection', 'Location', 'best');
+        legend([p1 p2], 'Hor. Convergence', 'Vert. Advection', 'Location', 'best');
         ylim([zp_bot 400]);
         xlim([xbot xtop])
-        ylabel('Geopotential Altitude [km]')
+        ylabel('Geopoential Alt [km]');
         xlabel('Magnitude')
         hold off;
         
@@ -264,8 +251,9 @@ for i = 1:length(varargin)
         plot(Obj.H_diff(x_ind(j), :), zp(x_ind(j), :), '--k' , 'Linewidth', 1.5);
         plot(Obj.H_star(x_ind(j), :), zp(x_ind(j), :), 'k' , 'Linewidth', 1.5);
         xlabel('Scale Height [km]');
-        ylabel('Geopoential altitude [km]');
+        ylabel('Geopoential Alt [km]');
         ylim([zp(x_ind(j), 5) 550]);
+        xlim([0 3E5]);
         legend('H_{\rho}','H^*_{\rho}', 'location', 'best');
         grid on;       
         title(['Helium Scale Heights at Lon=', num2str(xline_want(j)), ', Lat=', num2str(other_want)]);
