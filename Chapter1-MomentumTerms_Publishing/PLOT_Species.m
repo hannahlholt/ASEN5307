@@ -242,6 +242,7 @@ for i = 1:length(varargin)
         ylim([zp_bot 400]);
         xlim([xbot xtop])
         ylabel('Geopotential Altitude [km]')
+        xlabel('Magnitude')
         hold off;
         
         grid on;    
