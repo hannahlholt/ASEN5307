@@ -219,8 +219,8 @@ for i = 1:length(varargin)
     grid on;
     
    
-    %% PLOT VERTICAL STRUCTURE BETWEEN THE TERMS
-    fig3 = figure('units','normalized','outerposition',[0 1 .7 1]);     % left start, bottom start, side length, tall length
+    %% PLOT VERTICAL STRUCTURE OF DIVERGENCE AND ADVECTION
+    fig3 = figure('units','normalized','outerposition',[0 1 .7 .6]);     % left start, bottom start, side length, tall length
     for j = 1:length(x_ind)
         subplot(1,2,j)
         
@@ -254,11 +254,29 @@ for i = 1:length(varargin)
         end
     end
     
+
+    %% PLOT HELIUM DIFFUSIVE AND ACTUAL DENSITY SCALE HEIGHTS
+    fig4 = figure('units','normalized','outerposition',[0 1 .7 .6]);
+    for j = 1:length(x_ind)
+        subplot(1,2,j)
+        hold on;
+        plot(Obj.H_diff(x_ind(j), :), zp(x_ind(j), :), '--k' , 'Linewidth', 1.5);
+        plot(Obj.H_star(x_ind(j), :), zp(x_ind(j), :), 'k' , 'Linewidth', 1.5);
+        xlabel('Scale Height [km]');
+        ylabel('Geopoential altitude [km]');
+        ylim([zp(x_ind(j), 5) 550]);
+        legend('H_{\rho}','H^*_{\rho}', 'location', 'best');
+        grid on;       
+        title(['Helium Scale Heights at Lon=', num2str(xline_want(j)), ', Lat=', num2str(other_want)]);
+    
+    end
+    
     
      if saveFig ~= '0'
-        saveas(fig1, ['./Figures/Helium Paper/', Obj.name, 'LonMap_MomentumTerms_', saveFig, '.svg'])  
-        saveas(fig2, ['./Figures/Helium Paper/', Obj.name, 'LonMap_ScaleHtPercDiff_', saveFig, '.svg']) 
-        saveas(fig3, ['./Figures/Helium Paper/', Obj.name, 'LonMap_1DAltitude_', saveFig, '.svg'])
+        saveas(fig1, ['./Figures/Helium_Paper/', Obj.name, 'LonMap_MomentumTerms_', saveFig, '.svg'])  
+        saveas(fig2, ['./Figures/Helium_Paper/', Obj.name, 'LonMap_ScaleHtPercDiff_', saveFig, '.svg']) 
+        saveas(fig3, ['./Figures/Helium_Paper/', Obj.name, 'LonMap_1DAltitude_', saveFig, '.svg'])
+        saveas(fig4, ['./Figures/Helium_Paper/', Obj.name, '_Density_ScaleHeights_', saveFig, '.svg'])
     end
     
     

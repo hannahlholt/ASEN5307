@@ -12,7 +12,7 @@ run startup.m
 ut_want = 1;        % what time segment desired from simulation
 feat = 7;           % Select latitude and longitude desired
 pdrag = 1;          % 1 if pdrag file used, 0 if not, 2 = special case
-day_want = 81;      % storm hits on day 80 at 00:00 hrs
+day_want = 81;      % storm hits on day 80 at 00:00 hrs - use on Erics Runs
 res = 2.5;          % simulation resolution
 
 % ----- Global Features -------
@@ -146,21 +146,42 @@ Tot_Mdiv = HorMassFluxDivergence(omegaExpGrad, Z, p0, g0, N2, O2, O1, He);
 
 % -------------------------------------
 
-%% Plot Total Gas Features
-% x_label = 'Longitude';
+%% ------------- PLOTTING -------------------------------------------------
+% -------------------------------------------------------------------------
+
+%% 1 - Plot Total Gas Features
+x_label = 'Longitude';
 % saveFig = '0';
 % PLOT_TotalGas(res, x_label, zp, z_ilev, lon, lon_want, lat_want, omega, omegaGrad, Tot_Mdiv, plotname, saveFig)
 
-
-%% Plot Specific Species Behavior
+%% 2 - Plot Specific Species Behavior
+close all;
 saveFig = savename;
 factor = -P/g0; 
 PLOT_Species(res, x_label, zp, z_ilev, lon, lon_want, lat_want, factor, omega, omegaGrad, plotname, saveFig, He)
 
+%% 3 - Plot MMRs of N2, O2, O, and He
+i = find(lon == lon_want(1));
 
+thisfig = figure();
+plot(N2.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
+hold on
+plot(O2.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
+hold on
+plot(O1.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
+hold on
+plot(He.mmr(i,:), zp(i,:)/1000, 'Linewidth', 1.5);
 
-%% Plot Helium behavior at 400 km
+legend('N2','O2','O1','He', 'location', 'Northwest');
+title(['TIEGCM Mass Mixing Ratios for Lat = ', num2str(lat_want) , ', Lon = ', num2str(lon_want(1))]);
+ylim([120 550]);
+set(gca, 'XScale', 'log');
+xlabel('Mass Mixing Ratio');
+ylabel('Geopotential Altitude [km]');
+grid on;
+saveas(thisfig, ['./Figures/Helium_Paper/MMRs_', savename, '.svg'])
 
+%% 4 - Plot global Helium Density at ~400 km on Pressure lvl
 y = lat;        % row vector with average of each column.
 x = lon;
 [X, Y] = meshgrid(x, y);        % mesh grid used for every subplot
@@ -184,7 +205,6 @@ xticks(linspace(-180, 180, 9))
 xticklabels({'12', '15', '18', '21', '0', '3', '6', '9', '12'})
 
 %% Extras 
-
 % make sure the lat and lon max is correct!
 [lon_max, lat_max] = find(he2 == max(he2(:,15), [], 'all'))
 lon(lon_max)
